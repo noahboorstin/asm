@@ -1,0 +1,302 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+
+	.org 9D93h
+	.db $BB,$6D
+	DI
+	IN A, ($15)
+	CP $33
+	RET Z
+	CP $55
+	RET Z	
+	IN A, ($0E)
+	PUSH AF
+	IN A, (6)
+	PUSH AF
+	LD HL, Stuff
+	EXX
+	;reading stuff:
+	LD HL, PlotSScreen
+	LD DE, 12
+	LD B, 7
+Loop:
+	LD A, (HL)
+	SRL A
+	SRL A
+	SRL A
+	EXX
+	LD (HL), A
+	INC HL
+	EXX
+	ADD HL, DE
+	DJNZ Loop	
+	;assuming my calc has enough memory...
+	;don't mess with this, this somehow unlocks the flash, thank you BrandonW
+	LD HL, Ans
+	RST 20h
+	RST 10h
+	EX DE, HL
+	LD A, (HL)
+	CP 1
+	JP NZ, EndProgram
+	INC HL
+	LD A, (HL)
+	CP 0
+	JP NZ, EndProgram
+	INC HL
+	LD D, 0
+	LD E, (HL)
+	DEC E
+	LD H, D
+	LD L, E	
+	ADD HL, HL
+	ADD HL, HL
+	ADD HL, HL
+	OR A
+	SBC HL, DE
+	LD DE, $C606
+	ADD HL, DE
+	LD (LetterToReplace+1), HL ;done getting letter
+	LD A, 7
+	OUT (6), A
+	OR A ;checking if the same
+	LD DE, $8000
+	SBC HL, DE
+	EX DE, HL
+	LD B, 7
+	LD HL, Stuff
+CheckLoopSame:
+	LD A, (DE)
+	XOR (HL)
+	JR NZ, NotSame
+	INC HL
+	INC DE
+	DJNZ CheckLoopSame
+	JP EndProgram
+NotSame:
+	;start unlocking ROM:	
+	;JP DoneUnlocking
+	
+	LD A, $7B
+	CALL outputPage
+	LD HL, $5092
+	LD E, (HL)
+	INC HL
+	LD D, (HL)
+	INC HL
+	LD A, (HL)
+	CALL outputPage
+	EX DE, HL
+	LD A, $CC
+	LD BC, $FFFF
+	CPIR
+	LD E, (HL)
+	INC HL
+	LD D, (HL)
+	PUSH DE
+	POP IX
+	LD HL, $8080
+	LD (HL), $C3
+	INC HL
+	LD (HL), returnPoint & %11111111
+	INC HL
+	LD (HL), returnPoint >> 8
+	LD HL, pagedBuf
+	LD (HL), $80
+	LD DE, pagedBuf+1
+	LD BC, 49
+	LDIR
+	LD (iMathPtr5), SP
+	LD HL, (iMathPtr5)
+	LD DE, $8000
+	LD BC, 50
+	LDIR
+	LD DE, (iMathPtr5)
+	LD HL, -12
+	ADD HL, DE
+	LD (iMathPtr5), HL
+	LD IY, $0018-$25
+	LD A, 50
+	LD (pagedCount), A
+	LD A, 8
+	LD (arcInfo), A
+	JP (IX)
+outputPage:
+	BIT 7, A
+	RES 7, A
+	LD B, A
+	LD A, 1
+	JR NZ, opBig
+	DEC A
+opBig:
+	OUT ($0E), A
+	LD A, B
+	CALL translatePage
+	OUT (6), A
+	RET
+translatePage:
+	LD B, A
+	IN A, (2)
+	AND $80
+	JR Z, _is83P
+	IN A, ($21)
+	AND 3
+	LD A, B
+	RET NZ
+	AND $3F
+	RET
+_is83P:
+	LD A, B
+	AND $1F
+	RET
+returnPoint:
+	LD HL, $0018
+	LD (HL), $0C3
+	LD BC, 50
+returnWait:
+	LD IY, flags
+	DJNZ returnWait
+	LD HL, (iMathPtr5)
+	LD DE, 12
+	ADD HL, DE
+	LD SP, HL
+	EX DE, HL
+	LD HL, $8000
+	LDIR
+DoneUnlocking:
+	;okay, this can be messed with, just remember to pop and restore flash pages
+	DI
+	LD A, 7
+	OUT (6), A
+	LD HL, (LetterToReplace+1)
+	OR A ;checking if the same
+	LD DE, $8000
+	SBC HL, DE
+	EX DE, HL
+	LD B, 7
+	LD HL, Stuff
+CheckLoopErase:
+	LD A, (DE)
+	CPL
+	AND (HL)
+	JR NZ, NeedErase
+	INC HL
+	INC DE
+	DJNZ CheckLoopErase
+	LD B, 7
+	EX DE, HL
+Overwrite:
+	DEC HL
+	DEC DE
+	LD A, (DE)
+	LD C, A
+	LD A, $AA
+	LD ($0AAA), A
+	LD A, $55
+	LD ($0555), A
+	LD A, $A0
+	LD ($0AAA), A
+	LD (HL), C
+	DJNZ Overwrite	
+	JP EndProgram
+NeedErase:	
+	IN A, (5)
+	LD (SavePage+1), A	
+	LD A, 4
+SaveNextPage:
+	OUT (5), A
+	OUT (6), A
+	EX AF, AF'
+	;i feel like this will get me into trouble, assuming C000-end of mem is 0...
+	LD HL, $4000
+	LD DE, $C000
+	LD BC, $3FFF
+	LDIR
+	EX AF, AF'
+	INC A
+	CP 8
+	JR NZ, SaveNextPage
+LetterToReplace:
+	LD DE, $C606
+	LD HL, Stuff
+	LD BC, 7
+	LDIR
+	;try erasing the entire page...
+	LD A, $AA
+	LD ($0AAA), A
+	LD A, $55
+	LD ($0555), A
+	LD A, $80
+	LD ($0AAA), A
+	LD A, $AA
+	LD ($0AAA), A
+	LD A, $55
+	LD ($0555), A
+	LD A, $30 ;this REALLY should not be changed. REALLY.
+	LD ($4000), A
+WaitErase:
+	LD A, ($4000)
+	CP $FF ;CHANGE THIS
+	JR NZ, WaitErase
+	LD A, 7
+WriteNextPage:
+	OUT (5), A
+	OUT (6), A
+	EX AF, AF'
+	LD HL, $4000
+	LD DE, $C000
+WriteLoop:
+	LD A, (DE)
+	LD B, A
+	LD A, $AA
+	LD ($0AAA), A
+	LD A, $55
+	LD ($0555), A
+	LD A, $A0
+	LD ($0AAA), A
+	LD (HL), B
+Uh:
+	LD A, (HL)
+	CP B
+	JR NZ, Uh
+	INC HL
+	INC DE
+	LD A, D
+	CP 0
+	JR NZ, WriteLoop
+;	LD HL, $C000
+;	LD DE, $C001
+;	LD BC, $3FFF
+;	LD (HL), 0
+;	LDIR
+	EX AF, AF'
+	DEC A
+	CP 3
+	JR NZ, WriteNextPage
+SavePage:
+	LD A, 0
+	OUT (5), A
+EndProgram:
+	;again, don't mess with
+	POP AF
+	OUT (6), A
+	POP AF
+	OUT (0E), A	
+	EI
+	RET ;end of program
+Stuff:
+	.db %00000000
+	.db %00000000
+	.db %00000000
+	.db %00000000
+	.db %00000000
+	.db %00000000
+	.db %00000000
+Ans:
+	.DB MatObj, tAns, 0, 0
+end 

@@ -1,0 +1,17 @@
+    6 00:0000 -  -  -  -  
+    7 00:0000 -  -  -  -  #define ArrowKeys $FE
+    8 00:0000 -  -  -  -  #define DownKey $FE
+    9 00:0000 -  -  -  -  #define LeftKey $FD
+   10 00:0000 -  -  -  -  #define RightKey $FB
+   11 00:0000 -  -  -  -  #define UpKey $F7
+   12 00:0000 -  -  -  -  
+   13 00:0000 -  -  -  -  	.org 9D93h
+   14 00:9D93 BB 6D -  -  	.db $BB,$6D	
+   15 00:9D95 21 38 1F -  	LD     HL, $1F38
+   16 00:9D98 22 D7 86 -      LD     (PenCol), HL      ; PenCol comes before PenRow
+   17 00:9D9B 3E 71 -  -      LD     A, 'q'
+   18 00:9D9D EF -  -  -      rst 28h
+   19 00:9D9E 5E 45 -  -  	.dw _VPutMap
+   20 00:9DA0 EF -  -  -  	rst 28h
+   21 00:9DA1 5E 45 -  -  	.dw _VPutMap
+   22 00:9DA3 C9 -  -  -      RET

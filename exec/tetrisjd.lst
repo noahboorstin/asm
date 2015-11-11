@@ -1,0 +1,2266 @@
+    5 00:0000 -  -  -  -  	.ORG    ProgStart - 2
+    6 00:9D93 BB 6D -  -  	.DB     t2ByteTok, tAsmCmp
+    7 00:9D95 -  -  -  -  												; TetrisJD V1.1 Build 20060507
+    8 00:9D95 -  -  -  -  												; Par Jean-Denis Boivin (jeandenis.boivin@gmail.com)
+    9 00:9D95 -  -  -  -  												; (c) 2006 Team-Atemis
+   10 00:9D95 -  -  -  -  												; http://team-atemis.com
+   11 00:9D95 -  -  -  -  LBL_start_prog:
+   12 00:9D95 EF -  -  -  			rst 28h 
+   13 00:9D96 40 45 -  -  	.dw _ClrLCDFull)
+   14 00:9D98 EF -  -  -  			rst 28h 
+   15 00:9D99 D0 4B -  -  	.dw _GrBufClr)
+   16 00:9D9B 3E 02 -  -  	LD		A, 2
+   17 00:9D9D 32 D7 86 -  	LD		(PENCOL), A
+   18 00:9DA0 3E 01 -  -  	LD		A, 1
+   19 00:9DA2 32 D8 86 -  	LD		(PENROW), A
+   20 00:9DA5 21 9E AB -  	LD		HL, STR_bienvenue_1
+   21 00:9DA8 EF -  -  -  			rst 28h 
+   22 00:9DA9 61 45 -  -  	.dw _vputs)
+   23 00:9DAB 3E 0F -  -  	LD		A, 15
+   24 00:9DAD 32 D7 86 -  	LD		(PENCOL), A
+   25 00:9DB0 3E 0A -  -  	LD		A, 10
+   26 00:9DB2 32 D8 86 -  	LD		(PENROW), A
+   27 00:9DB5 21 BA AB -  	LD		HL, STR_bienvenue_2
+   28 00:9DB8 EF -  -  -  			rst 28h 
+   29 00:9DB9 61 45 -  -  	.dw _vputs)
+   30 00:9DBB 3E 0F -  -  	LD		A, 15
+   31 00:9DBD 32 D7 86 -  	LD		(PENCOL), A
+   32 00:9DC0 3E 2F -  -  	LD		A, 47
+   33 00:9DC2 32 D8 86 -  	LD		(PENROW), A
+   34 00:9DC5 21 CE AB -  	LD		HL, STR_bienvenue_3
+   35 00:9DC8 EF -  -  -  			rst 28h 
+   36 00:9DC9 61 45 -  -  	.dw _vputs)
+   37 00:9DCB 3E 05 -  -  	LD		A, 5
+   38 00:9DCD 32 D7 86 -  	LD		(PENCOL), A
+   39 00:9DD0 3E 1E -  -  	LD		A, 30
+   40 00:9DD2 32 D8 86 -  	LD		(PENROW), A
+   41 00:9DD5 21 E4 AB -  	LD		HL, STR_bienvenue_5
+   42 00:9DD8 EF -  -  -  			rst 28h 
+   43 00:9DD9 61 45 -  -  	.dw _vputs)
+   44 00:9DDB 3E 16 -  -  	LD		A, 22
+   45 00:9DDD 32 D7 86 -  	LD		(PENCOL), A
+   46 00:9DE0 3E 37 -  -  	LD		A, 55
+   47 00:9DE2 32 D8 86 -  	LD		(PENROW), A
+   48 00:9DE5 21 FC AB -  	LD		HL, STR_copyright_1
+   49 00:9DE8 EF -  -  -  			rst 28h 
+   50 00:9DE9 61 45 -  -  	.dw _vputs)
+   51 00:9DEB EF -  -  -  			rst 28h 
+   52 00:9DEC 72 49 -  -  	.dw _GetKey)
+   53 00:9DEE EF -  -  -  			rst 28h 
+   54 00:9DEF 40 45 -  -  	.dw _ClrLCDFull)
+   55 00:9DF1 EF -  -  -  			rst 28h 
+   56 00:9DF2 D0 4B -  -  	.dw _GrBufClr)
+   57 00:9DF4 CD EC A8 -  	CALL	CAL_draw_arena
+   58 00:9DF7 CD 5F A1 -  	CALL	CAL_update_score
+   59 00:9DFA 21 7C AB -  	LD		HL, INT_lvl
+   60 00:9DFD 36 FF -  -  	LD		(HL), -1
+   61 00:9DFF 21 87 AB -  	LD		HL, INT_speed_1
+   62 00:9E02 36 19 -  -  	LD		(HL), 25
+   63 00:9E04 CD D5 A5 -  	CALL	LBL_next_level
+   64 00:9E07 EF -  -  -  	rst 28h 
+   65 00:9E08 79 4B -  -  	.dw _RANDOM)
+   66 00:9E0A 3E 07 -  -  	LD		A, 7
+   67 00:9E0C CD B3 A1 -  	CALL	CAL_random
+   68 00:9E0F 23 -  -  -  	INC		HL
+   69 00:9E10 29 -  -  -  	ADD		HL, HL
+   70 00:9E11 54 -  -  -  	LD		D, H
+   71 00:9E12 5D -  -  -  	LD		E, L
+   72 00:9E13 29 -  -  -  	ADD		HL, HL
+   73 00:9E14 29 -  -  -  	ADD		HL, HL
+   74 00:9E15 19 -  -  -  	ADD		HL, DE
+   75 00:9E16 54 -  -  -  	LD		D, H
+   76 00:9E17 5D -  -  -  	LD		E, L
+   77 00:9E18 7C -  -  -  	LD		A, H
+   78 00:9E19 85 -  -  -  	ADD		A, L
+   79 00:9E1A 21 7E AB -  	LD		HL, INT_next_format
+   80 00:9E1D 77 -  -  -  	LD		(HL), A
+   81 00:9E1E CD 70 A1 -  	CALL	CAL_draw_new_piece
+   82 00:9E21 C3 24 9E -  	JP		LBL_game_loop
+   83 00:9E24 -  -  -  -  LBL_game_loop:
+   84 00:9E24 CD 56 9E -  	CALL	CAL_getkey
+   85 00:9E27 3A 81 AB -  	LD		A, (INT_quit)
+   86 00:9E2A FE 02 -  -  	CP		2
+   87 00:9E2C C8 -  -  -  	RET		Z
+   88 00:9E2D 3A 87 AB -  	LD		A, (INT_speed_1)
+   89 00:9E30 5F -  -  -  	LD		E, A
+   90 00:9E31 3A 88 AB -  	LD		A, (INT_wait_moin_y)
+   91 00:9E34 3C -  -  -  	INC		A
+   92 00:9E35 21 88 AB -  	LD  	HL, INT_wait_moin_y
+   93 00:9E38 77 -  -  -  	LD		(HL), A
+   94 00:9E39 FE 96 -  -  	CP		150
+   95 00:9E3B CC 48 9E -  	CALL	Z, CAL_inc_wait_2
+   96 00:9E3E 3A 89 AB -  	LD		A, (INT_wait_moin_y_2)
+   97 00:9E41 BB -  -  -  	CP		E
+   98 00:9E42 CC 8A 9F -  	CALL	Z, LBL_game_move_down
+   99 00:9E45 C3 24 9E -  	JP		LBL_game_loop
+  100 00:9E48 -  -  -  -  CAL_inc_wait_2:
+  101 00:9E48 21 88 AB -  	LD		HL, INT_wait_moin_y
+  102 00:9E4B 36 00 -  -  	LD		(HL), 0
+  103 00:9E4D 3A 89 AB -  	LD		A, (INT_wait_moin_y_2)
+  104 00:9E50 3C -  -  -  	INC		A
+  105 00:9E51 21 89 AB -  	LD		HL, INT_wait_moin_y_2
+  106 00:9E54 77 -  -  -  	LD		(HL), A
+  107 00:9E55 C9 -  -  -  	RET
+  108 00:9E56 -  -  -  -  CAL_getkey:
+  109 00:9E56 EF -  -  -  			rst 28h 
+  110 00:9E57 18 40 -  -  	.dw _GetCSC)
+  111 00:9E59 FE 03 -  -      CP		skRight
+  112 00:9E5B CA 9B 9F -  	JP		Z, LBL_game_move_rigth
+  113 00:9E5E FE 02 -  -  	CP		skLeft
+  114 00:9E60 CA A7 9F -  	JP		Z, LBL_game_move_left
+  115 00:9E63 FE 04 -  -  	CP		skUp
+  116 00:9E65 CA B9 9F -  	JP		Z, LBL_game_rotate
+  117 00:9E68 FE 31 -  -  	CP		skGraph
+  118 00:9E6A CA B9 9F -  	JP		Z, LBL_game_rotate
+  119 00:9E6D FE 32 -  -  	CP		skTrace
+  120 00:9E6F CA CA 9F -  	JP		Z, LBL_game_rotate_minus
+  121 00:9E72 FE 01 -  -  	CP		skDown
+  122 00:9E74 CA 8A 9F -  	JP		Z, LBL_game_move_down
+  123 00:9E77 FE 0F -  -  	CP		skClear
+  124 00:9E79 CA 98 9E -  	JP		Z, LBL_quit
+  125 00:9E7C FE 09 -  -  	CP		skEnter
+  126 00:9E7E CA 1E 9F -  	JP		Z, LBL_pause
+  127 00:9E81 C9 -  -  -  	RET
+  128 00:9E82 -  -  -  -  CAL_wait_patiently:
+  129 00:9E82 1E 00 -  -  	LD		E, 0
+  130 00:9E84 78 -  -  -  	LD		A, B
+  131 00:9E85 FE FF -  -  	CP		255
+  132 00:9E87 C8 -  -  -  	RET		Z
+  133 00:9E88 3C -  -  -  	INC		A
+  134 00:9E89 47 -  -  -  	LD		B, A
+  135 00:9E8A C3 8D 9E -  	JP		CAL_wait_patiently2
+  136 00:9E8D -  -  -  -  CAL_wait_patiently2:
+  137 00:9E8D 7B -  -  -  	LD		A, E
+  138 00:9E8E FE FF -  -  	CP		255
+  139 00:9E90 CA 82 9E -  	JP		Z, CAL_wait_patiently
+  140 00:9E93 3C -  -  -  	INC		A
+  141 00:9E94 5F -  -  -  	LD		E, A
+  142 00:9E95 C3 8D 9E -  	JP		CAL_wait_patiently2
+  143 00:9E98 -  -  -  -  LBL_quit:
+  144 00:9E98 21 81 AB -  	LD		HL, INT_quit
+  145 00:9E9B 36 02 -  -  	LD		(HL), 2
+  146 00:9E9D CD 3C 9F -  	CALL	CAL_dead_scrn_tetris
+  147 00:9EA0 CD 3B 9F -  	CALL	CAL_dead_scrn_tetris2
+  148 00:9EA3 06 00 -  -  	LD		B, 0
+  149 00:9EA5 CD 82 9E -  	CALL	CAL_wait_patiently
+  150 00:9EA8 EF -  -  -  	rst 28h 
+  151 00:9EA9 40 45 -  -  	.dw _ClrLCDFull)
+  152 00:9EAB EF -  -  -  	rst 28h 
+  153 00:9EAC D0 4B -  -  	.dw _GrBufClr)
+  154 00:9EAE 3E 0F -  -  	LD		A, 15
+  155 00:9EB0 32 D7 86 -  	LD		(PENCOL), A
+  156 00:9EB3 3E 0F -  -  	LD		A, 15
+  157 00:9EB5 32 D8 86 -  	LD		(PENROW), A
+  158 00:9EB8 21 CE AB -  	LD		HL, STR_bienvenue_3
+  159 00:9EBB EF -  -  -  			rst 28h 
+  160 00:9EBC 61 45 -  -  	.dw _vputs)
+  161 00:9EBE 3E 1A -  -  	LD		A, 26
+  162 00:9EC0 32 D7 86 -  	LD		(PENCOL), A
+  163 00:9EC3 3E 19 -  -  	LD		A, 25
+  164 00:9EC5 32 D8 86 -  	LD		(PENROW), A
+  165 00:9EC8 21 29 9F -  	LD		HL, STR_mort
+  166 00:9ECB EF -  -  -  			rst 28h 
+  167 00:9ECC 61 45 -  -  	.dw _vputs)
+  168 00:9ECE 3E 1E -  -  	LD		A, 30
+  169 00:9ED0 32 D7 86 -  	LD		(PENCOL), A
+  170 00:9ED3 3E 23 -  -  	LD		A, 35
+  171 00:9ED5 32 D8 86 -  	LD		(PENROW), A
+  172 00:9ED8 21 94 A0 -  	LD		HL, ARR_score
+  173 00:9EDB EF -  -  -  			rst 28h 
+  174 00:9EDC 61 45 -  -  	.dw _vputs)
+  175 00:9EDE C3 E1 9E -  	JP		LBL_quit_2
+  176 00:9EE1 -  -  -  -  LBL_quit_2:
+  177 00:9EE1 EF -  -  -  			rst 28h 
+  178 00:9EE2 18 40 -  -  	.dw _GetCSC)
+  179 00:9EE4 FE 09 -  -      CP		skEnter
+  180 00:9EE6 CA EC 9E -  	JP		Z, LBL_wtf
+  181 00:9EE9 C3 E1 9E -      JP		LBL_quit_2
+  182 00:9EEC -  -  -  -  LBL_wtf:
+  183 00:9EEC 21 1A 9F -   	LD 		HL,str1
+  184 00:9EEF E7 -  -  -  	RST 		20h
+  185 00:9EF0 EF -  -  -  			rst 28h 
+  186 00:9EF1 F1 42 -  -  	.dw _ChkFindSym)
+  187 00:9EF3 21 1A 9F -   	LD 		HL,str1
+  188 00:9EF6 E7 -  -  -  	RST 		20h
+  189 00:9EF7 EF -  -  -  			rst 28h 
+  190 00:9EF8 F1 42 -  -  	.dw _chkFindSym)
+  191 00:9EFA D5 -  -  -  	PUSH 		DE
+  192 00:9EFB 78 -  -  -  	LD 		A,B
+  193 00:9EFC D1 -  -  -   	POP 		DE
+  194 00:9EFD 13 -  -  -  	INC 		DE
+  195 00:9EFE 13 -  -  -  	INC 		DE
+  196 00:9EFF 21 94 A0 -  	LD 		HL,ARR_score
+  197 00:9F02 01 0A 00 -  	LD 		BC,10
+  198 00:9F05 ED B0 -  -  	LDIR
+  199 00:9F07 -  -  -  -  
+  200 00:9F07 3A 7C AB -  	LD		A, (INT_lvl)
+  201 00:9F0A EF -  -  -  			rst 28h 
+  202 00:9F0B 8C 47 -  -  	.dw _SetXXOP1)
+  203 00:9F0D EF -  -  -  			rst 28h 
+  204 00:9F0E D1 4A -  -  	.dw _StoX)
+  205 00:9F10 3A 62 A6 -  	LD		A, (INT_lvl2)
+  206 00:9F13 EF -  -  -  			rst 28h 
+  207 00:9F14 8C 47 -  -  	.dw _SetXXOP1)
+  208 00:9F16 EF -  -  -  			rst 28h 
+  209 00:9F17 C5 4A -  -  	.dw _StoR)
+  210 00:9F19 C9 -  -  -  	RET
+  211 00:9F1A -  -  -  -  
+  212 00:9F1A -  -  -  -  str1:
+  213 00:9F1A 04 AA 00 00 .db StrngObj,tVarStrng,tStr1,$00
+  214 00:9F1E -  -  -  -  
+  215 00:9F1E -  -  -  -  LBL_pause:
+  216 00:9F1E EF -  -  -  			rst 28h 
+  217 00:9F1F 18 40 -  -  	.dw _GetCSC)
+  218 00:9F21 FE 09 -  -      	CP		skEnter
+  219 00:9F23 CA 56 9E -  	JP		Z, CAL_getkey
+  220 00:9F26 C3 1E 9F -  	JP		LBL_pause
+  221 00:9F29 -  -  -  -  
+  222 00:9F29 -  -  -  -  STR_mort:
+  223 00:9F29 3A 3A 20 47 
+              41 4D 45 20 
+              4F 56 45 52 
+              20 3A 3A 00 	.DB		":: GAME OVER ::", 0
+  224 00:9F39 -  -  -  -  INT_dead_x:
+  225 00:9F39 00 -  -  -  	.DB		0
+  226 00:9F3A -  -  -  -  INT_dead_y:
+  227 00:9F3A 00 -  -  -  	.DB		0
+  228 00:9F3B -  -  -  -  CAL_dead_scrn_tetris2:
+  229 00:9F3B C9 -  -  -  	RET
+  230 00:9F3C -  -  -  -  CAL_dead_scrn_tetris:
+  231 00:9F3C 21 39 9F -  	LD		HL, INT_dead_x
+  232 00:9F3F 36 01 -  -  	LD		(HL), 1
+  233 00:9F41 21 3A 9F -  	LD		HL, INT_dead_y
+  234 00:9F44 36 01 -  -  	LD		(HL), 1
+  235 00:9F46 C3 49 9F -  	JP		LBL_dead_scrn_tetris
+  236 00:9F49 -  -  -  -  LBL_dead_scrn_tetris:
+  237 00:9F49 3A 39 9F -  	LD		A, (INT_dead_x)
+  238 00:9F4C 21 8A AB -  	LD		HL, INT_sp_piece_relx
+  239 00:9F4F 77 -  -  -  	LD		(HL), A
+  240 00:9F50 3A 3A 9F -  	LD		A, (INT_dead_y)
+  241 00:9F53 D6 04 -  -  	SUB		4
+  242 00:9F55 21 8B AB -  	LD		HL, INT_sp_piece_rely
+  243 00:9F58 77 -  -  -  	LD		(HL), A
+  244 00:9F59 21 82 AB -  	LD		HL, INT_piece_skin
+  245 00:9F5C 36 01 -  -  	LD		(HL), 1
+  246 00:9F5E CD 73 A8 -  	CALL	CAL_ppiece_off
+  247 00:9F61 CD 61 A8 -  	CALL	CAL_ppiece_on
+  248 00:9F64 C3 67 9F -  	JP		LBL_dead_scrn_tetris_addx
+  249 00:9F67 -  -  -  -  LBL_dead_scrn_tetris_addx:
+  250 00:9F67 3A 39 9F -  	LD		A, (INT_dead_x)
+  251 00:9F6A 3C -  -  -  	INC		A
+  252 00:9F6B 21 39 9F -  	LD		HL, INT_dead_x
+  253 00:9F6E 77 -  -  -  	LD		(HL), A
+  254 00:9F6F FE 0C -  -  	CP		12
+  255 00:9F71 CA 77 9F -  	JP		Z, LBL_dead_scrn_tetris_addy
+  256 00:9F74 C3 49 9F -  	JP		LBL_dead_scrn_tetris
+  257 00:9F77 -  -  -  -  LBL_dead_scrn_tetris_addy:
+  258 00:9F77 21 39 9F -  	LD		HL, INT_dead_x
+  259 00:9F7A 36 01 -  -  	LD		(HL), 1
+  260 00:9F7C 3A 3A 9F -  	LD		A, (INT_dead_y)
+  261 00:9F7F 3C -  -  -  	INC		A
+  262 00:9F80 21 3A 9F -  	LD		HL, INT_dead_y
+  263 00:9F83 77 -  -  -  	LD		(HL), A
+  264 00:9F84 FE 10 -  -  	CP		16
+  265 00:9F86 C8 -  -  -  	RET		Z
+  266 00:9F87 C3 49 9F -  	JP		LBL_dead_scrn_tetris
+  267 00:9F8A -  -  -  -  LBL_game_move_down:
+  268 00:9F8A 21 89 AB -  	LD		HL, INT_wait_moin_y_2
+  269 00:9F8D 36 00 -  -  	LD		(HL), 0
+  270 00:9F8F 3A 9D AB -  	LD		A, (INT_piece_rely)
+  271 00:9F92 3D -  -  -  	DEC		A
+  272 00:9F93 21 9D AB -  	LD		HL, INT_piece_rely
+  273 00:9F96 77 -  -  -  	LD		(HL), A
+  274 00:9F97 CD 1E A7 -  	CALL	CAL_update_piece
+  275 00:9F9A C9 -  -  -  	RET
+  276 00:9F9B -  -  -  -  LBL_game_move_rigth:
+  277 00:9F9B 3A 9C AB -  	LD		A, (INT_piece_relx)
+  278 00:9F9E 3C -  -  -  	INC		A
+  279 00:9F9F 21 9C AB -  	LD		HL, INT_piece_relx
+  280 00:9FA2 77 -  -  -  	LD		(HL), A
+  281 00:9FA3 CD 1E A7 -  	CALL	CAL_update_piece
+  282 00:9FA6 C9 -  -  -  	RET
+  283 00:9FA7 -  -  -  -  LBL_game_move_left:
+  284 00:9FA7 3A 9C AB -  	LD		A, (INT_piece_relx)
+  285 00:9FAA 3D -  -  -  	DEC		A
+  286 00:9FAB 21 9C AB -  	LD		HL, INT_piece_relx
+  287 00:9FAE 77 -  -  -  	LD		(HL), A
+  288 00:9FAF CD 1E A7 -  	CALL	CAL_update_piece
+  289 00:9FB2 C9 -  -  -  	RET
+  290 00:9FB3 -  -  -  -  CAL_rot_reset:
+  291 00:9FB3 3E 00 -  -  	LD		A, 0
+  292 00:9FB5 C9 -  -  -  	RET
+  293 00:9FB6 -  -  -  -  CAL_rot_reset2:
+  294 00:9FB6 3E 04 -  -  	LD		A, 4
+  295 00:9FB8 C9 -  -  -  	RET
+  296 00:9FB9 -  -  -  -  LBL_game_rotate:
+  297 00:9FB9 3A 84 AB -  	LD		A, (INT_rot)
+  298 00:9FBC 3C -  -  -  	INC		A
+  299 00:9FBD FE 04 -  -  	CP		4
+  300 00:9FBF CC B3 9F -  	CALL	Z, CAL_rot_reset
+  301 00:9FC2 21 84 AB -  	LD		HL, INT_rot
+  302 00:9FC5 77 -  -  -  	LD		(HL), A
+  303 00:9FC6 CD 1E A7 -  	CALL	CAL_update_piece
+  304 00:9FC9 C9 -  -  -  	RET
+  305 00:9FCA -  -  -  -  LBL_game_rotate_minus:
+  306 00:9FCA 3A 84 AB -  	LD		A, (INT_rot)
+  307 00:9FCD FE 00 -  -  	CP		0
+  308 00:9FCF CC B6 9F -  	CALL	Z, CAL_rot_reset2
+  309 00:9FD2 3D -  -  -  	DEC		A
+  310 00:9FD3 21 84 AB -  	LD		HL, INT_rot
+  311 00:9FD6 77 -  -  -  	LD		(HL), A
+  312 00:9FD7 CD 1E A7 -  	CALL	CAL_update_piece
+  313 00:9FDA C9 -  -  -  	RET
+  314 00:9FDB -  -  -  -  CAL_set_new_fr:
+  315 00:9FDB 3A 83 AB -  	LD		A, (INT_format)
+  316 00:9FDE 5F -  -  -  	LD		E, A
+  317 00:9FDF 3A 84 AB -  	LD		A, (INT_rot)
+  318 00:9FE2 83 -  -  -  	ADD		A, E
+  319 00:9FE3 5F -  -  -  	LD		E, A
+  320 00:9FE4 C9 -  -  -  	RET
+  321 00:9FE5 -  -  -  -  CAL_set_anc_fr:
+  322 00:9FE5 3A 85 AB -  	LD		A, (INT_anc_format)
+  323 00:9FE8 5F -  -  -  	LD		E, A
+  324 00:9FE9 3A 86 AB -  	LD		A, (INT_anc_rot)
+  325 00:9FEC 83 -  -  -  	ADD		A, E
+  326 00:9FED 5F -  -  -  	LD		E, A
+  327 00:9FEE C9 -  -  -  	RET
+  328 00:9FEF -  -  -  -  CAL_next_format:
+  329 00:9FEF 3A 7E AB -  	LD		A, (INT_next_format)
+  330 00:9FF2 5F -  -  -  	LD		E, A
+  331 00:9FF3 C9 -  -  -  	RET
+  332 00:9FF4 -  -  -  -  CAL_getformat:
+  333 00:9FF4 3A 7F AB -  	LD		A, (INT_anc_or_new)
+  334 00:9FF7 FE 01 -  -  	CP		1
+  335 00:9FF9 CC DB 9F -  	CALL	Z, CAL_set_new_fr
+  336 00:9FFC FE 02 -  -  	CP		2
+  337 00:9FFE CC E5 9F -  	CALL	Z, CAL_set_anc_fr
+  338 00:A001 FE 03 -  -  	CP		3
+  339 00:A003 CC EF 9F -  	CALL	Z, CAL_next_format
+  340 00:A006 7B -  -  -  	LD		A, E
+  341 00:A007 FE 0A -  -  	CP		10
+  342 00:A009 CA 7D AA -  	JP		Z, LBL_draw_piece_1_0
+  343 00:A00C FE 0B -  -  	CP		11
+  344 00:A00E CA 7D AA -  	JP		Z, LBL_draw_piece_1_0
+  345 00:A011 FE 0C -  -  	CP		12
+  346 00:A013 CA 7D AA -  	JP		Z, LBL_draw_piece_1_0
+  347 00:A016 FE 0D -  -  	CP		13
+  348 00:A018 CA 7D AA -  	JP		Z, LBL_draw_piece_1_0
+  349 00:A01B FE 14 -  -  	CP		20
+  350 00:A01D CA 86 AA -  	JP		Z, LBL_draw_piece_2_0
+  351 00:A020 FE 15 -  -  	CP		21
+  352 00:A022 CA 8F AA -  	JP		Z, LBL_draw_piece_2_1
+  353 00:A025 FE 16 -  -  	CP		22
+  354 00:A027 CA 98 AA -  	JP		Z, LBL_draw_piece_2_2
+  355 00:A02A FE 17 -  -  	CP		23
+  356 00:A02C CA A1 AA -  	JP		Z, LBL_draw_piece_2_3
+  357 00:A02F FE 1E -  -  	CP		30
+  358 00:A031 CA AA AA -  	JP		Z, LBL_draw_piece_3_0
+  359 00:A034 FE 1F -  -  	CP		31
+  360 00:A036 CA B3 AA -  	JP		Z, LBL_draw_piece_3_1
+  361 00:A039 FE 20 -  -  	CP		32
+  362 00:A03B CA AA AA -  	JP		Z, LBL_draw_piece_3_0
+  363 00:A03E FE 21 -  -  	CP		33
+  364 00:A040 CA B3 AA -  	JP		Z, LBL_draw_piece_3_1
+  365 00:A043 FE 28 -  -  	CP		40
+  366 00:A045 CA BC AA -  	JP		Z, LBL_draw_piece_4_0
+  367 00:A048 FE 29 -  -  	CP		41
+  368 00:A04A CA C5 AA -  	JP		Z, LBL_draw_piece_4_1
+  369 00:A04D FE 2A -  -  	CP		42
+  370 00:A04F CA BC AA -  	JP		Z, LBL_draw_piece_4_0
+  371 00:A052 FE 2B -  -  	CP		43
+  372 00:A054 CA C5 AA -  	JP		Z, LBL_draw_piece_4_1
+  373 00:A057 FE 32 -  -  	CP		50
+  374 00:A059 CA CE AA -  	JP		Z, LBL_draw_piece_5_0
+  375 00:A05C FE 33 -  -  	CP		51
+  376 00:A05E CA D7 AA -  	JP		Z, LBL_draw_piece_5_1
+  377 00:A061 FE 34 -  -  	CP		52
+  378 00:A063 CA CE AA -  	JP		Z, LBL_draw_piece_5_0
+  379 00:A066 FE 35 -  -  	CP		53
+  380 00:A068 CA D7 AA -  	JP		Z, LBL_draw_piece_5_1
+  381 00:A06B FE 3C -  -  	CP		60
+  382 00:A06D CA E0 AA -  	JP		Z, LBL_draw_piece_6_0
+  383 00:A070 FE 3D -  -  	CP		61
+  384 00:A072 CA E9 AA -  	JP		Z, LBL_draw_piece_6_1
+  385 00:A075 FE 3E -  -  	CP		62
+  386 00:A077 CA F2 AA -  	JP		Z, LBL_draw_piece_6_2
+  387 00:A07A FE 3F -  -  	CP		63
+  388 00:A07C CA FB AA -  	JP		Z, LBL_draw_piece_6_3
+  389 00:A07F FE 46 -  -  	CP		70
+  390 00:A081 CA 04 AB -  	JP		Z, LBL_draw_piece_7_0
+  391 00:A084 FE 47 -  -  	CP		71
+  392 00:A086 CA 0D AB -  	JP		Z, LBL_draw_piece_7_1
+  393 00:A089 FE 48 -  -  	CP		72
+  394 00:A08B CA 16 AB -  	JP		Z, LBL_draw_piece_7_2
+  395 00:A08E FE 49 -  -  	CP		73
+  396 00:A090 CA 1F AB -  	JP		Z, LBL_draw_piece_7_3
+  397 00:A093 C9 -  -  -  	RET
+  398 00:A094 -  -  -  -  ARR_score:										; Début Score
+  399 00:A094 30 30 30 30 
+              30 30 30 30 
+              30 00 -  -  	.DB		48,48,48,48,48,48,48,48,48,0
+  400 00:A09E -  -  -  -  ARR_score_buf:
+  401 00:A09E 00 00 00 00 
+              00 00 00 00 
+              00 00 -  -  	.DB		0,0,0,0,0,0,0,0,0,0
+  402 00:A0A8 -  -  -  -  CAL_conv_score:
+  403 00:A0A8 06 04 -  -  	LD		B, 4
+  404 00:A0AA 3E 00 -  -      LD		A, 0
+  405 00:A0AC 4F -  -  -      LD		C, A
+  406 00:A0AD 21 9E A0 -      LD		HL, ARR_score_buf
+  407 00:A0B0 CD 52 AB -      CALL	CAL_mtx_10
+  408 00:A0B3 3A F4 A0 -      LD		A, (INT_score_10000)
+  409 00:A0B6 77 -  -  -      LD		(HL), A
+  410 00:A0B7 06 05 -  -      LD		B, 5
+  411 00:A0B9 3E 00 -  -      LD		A, 0
+  412 00:A0BB 4F -  -  -      LD		C, A
+  413 00:A0BC 21 9E A0 -      LD		HL, ARR_score_buf
+  414 00:A0BF CD 52 AB -      CALL	CAL_mtx_10
+  415 00:A0C2 3A F5 A0 -      LD		A, (INT_score_1000)
+  416 00:A0C5 77 -  -  -      LD		(HL), A
+  417 00:A0C6 06 06 -  -      LD		B, 6
+  418 00:A0C8 3E 00 -  -      LD		A, 0
+  419 00:A0CA 4F -  -  -      LD		C, A
+  420 00:A0CB 21 9E A0 -      LD		HL, ARR_score_buf
+  421 00:A0CE CD 52 AB -      CALL	CAL_mtx_10
+  422 00:A0D1 3A F6 A0 -      LD		A, (INT_score_100)
+  423 00:A0D4 77 -  -  -      LD		(HL), A
+  424 00:A0D5 06 07 -  -      LD		B, 7
+  425 00:A0D7 3E 00 -  -      LD		A, 0
+  426 00:A0D9 4F -  -  -      LD		C, A
+  427 00:A0DA 21 9E A0 -      LD		HL, ARR_score_buf
+  428 00:A0DD CD 52 AB -      CALL	CAL_mtx_10
+  429 00:A0E0 3A F7 A0 -      LD		A, (INT_score_10)
+  430 00:A0E3 77 -  -  -      LD		(HL), A
+  431 00:A0E4 06 08 -  -      LD		B, 8
+  432 00:A0E6 3E 00 -  -      LD		A, 0
+  433 00:A0E8 4F -  -  -      LD		C, A
+  434 00:A0E9 21 9E A0 -      LD		HL, ARR_score_buf
+  435 00:A0EC CD 52 AB -      CALL	CAL_mtx_10
+  436 00:A0EF 3A F8 A0 -      LD		A, (INT_score_1)
+  437 00:A0F2 77 -  -  -      LD		(HL), A
+  438 00:A0F3 C9 -  -  -      RET
+  439 00:A0F4 -  -  -  -  INT_score_10000:
+  440 00:A0F4 00 -  -  -  	.DB		0
+  441 00:A0F5 -  -  -  -  INT_score_1000:
+  442 00:A0F5 00 -  -  -  	.DB		0
+  443 00:A0F6 -  -  -  -  INT_score_100:
+  444 00:A0F6 00 -  -  -  	.DB		0
+  445 00:A0F7 -  -  -  -  INT_score_10:
+  446 00:A0F7 00 -  -  -  	.DB		0
+  447 00:A0F8 -  -  -  -  INT_score_1:
+  448 00:A0F8 00 -  -  -  	.DB		0
+  449 00:A0F9 -  -  -  -  INT_score_to_add:
+  450 00:A0F9 0C -  -  -  	.DB		12
+  451 00:A0FA -  -  -  -  INT_score_to_add_buf:
+  452 00:A0FA 00 -  -  -  	.DB		0
+  453 00:A0FB -  -  -  -  INT_score_x:
+  454 00:A0FB 00 -  -  -  	.DB		0
+  455 00:A0FC -  -  -  -  CAL_add_score:
+  456 00:A0FC CD A8 A0 -  	CALL	CAL_conv_score
+  457 00:A0FF CD 06 A1 -  	CALL	CAL_add_score_2
+  458 00:A102 CD 5F A1 -  	CALL	CAL_update_score
+  459 00:A105 C9 -  -  -  	RET
+  460 00:A106 -  -  -  -  CAL_add_score_2:
+  461 00:A106 21 FB A0 -  	LD		HL, INT_score_x
+  462 00:A109 36 08 -  -  	LD		(HL), 8
+  463 00:A10B C3 0E A1 -  	JP		LBL_add_score
+  464 00:A10E -  -  -  -  LBL_add_score:
+  465 00:A10E 3A FB A0 -      LD		A, (INT_score_x)
+  466 00:A111 47 -  -  -      LD		B, A
+  467 00:A112 3E 00 -  -      LD		A, 0
+  468 00:A114 4F -  -  -      LD		C, A
+  469 00:A115 21 9E A0 -      LD		HL, ARR_score_buf
+  470 00:A118 CD 52 AB -  	CALL	CAL_mtx_10
+  471 00:A11B 21 FA A0 -  	LD		HL, INT_score_to_add_buf
+  472 00:A11E 77 -  -  -  	LD		(HL), A
+  473 00:A11F 3A FB A0 -  	LD		A, (INT_score_x)
+  474 00:A122 47 -  -  -      LD		B, A
+  475 00:A123 3E 00 -  -      LD		A, 0
+  476 00:A125 4F -  -  -      LD		C, A
+  477 00:A126 21 94 A0 -      LD		HL, ARR_score
+  478 00:A129 CD 52 AB -  	CALL	CAL_mtx_10
+  479 00:A12C 5F -  -  -  	LD		E, A
+  480 00:A12D 3A FA A0 -  	LD		A, (INT_score_to_add_buf)
+  481 00:A130 83 -  -  -  	ADD		A, E
+  482 00:A131 FE 3A -  -  	CP		58
+  483 00:A133 D2 3A A1 -  	JP		NC, LBL_add_score_next_unite
+  484 00:A136 77 -  -  -  	LD		(HL), A
+  485 00:A137 C3 50 A1 -  	JP		LBL_add_score_addx
+  486 00:A13A -  -  -  -  LBL_add_score_next_unite:
+  487 00:A13A D6 0A -  -  	SUB		10
+  488 00:A13C 77 -  -  -  	LD		(HL), A
+  489 00:A13D 3A FB A0 -      LD		A, (INT_score_x)
+  490 00:A140 3D -  -  -      DEC		A
+  491 00:A141 47 -  -  -      LD		B, A
+  492 00:A142 3E 00 -  -      LD		A, 0
+  493 00:A144 4F -  -  -      LD		C, A
+  494 00:A145 21 9E A0 -      LD		HL, ARR_score_buf
+  495 00:A148 CD 52 AB -      CALL	CAL_mtx_10
+  496 00:A14B 3C -  -  -  	INC		A
+  497 00:A14C 77 -  -  -  	LD		(HL), A
+  498 00:A14D C3 50 A1 -  	JP		LBL_add_score_addx
+  499 00:A150 -  -  -  -  LBL_add_score_addx:
+  500 00:A150 3A FB A0 -  	LD		A, (INT_score_x)
+  501 00:A153 3D -  -  -  	DEC		A
+  502 00:A154 21 FB A0 -  	LD		HL, INT_score_x
+  503 00:A157 77 -  -  -  	LD		(HL), A
+  504 00:A158 3C -  -  -  	INC		A
+  505 00:A159 FE 00 -  -  	CP		0
+  506 00:A15B C8 -  -  -  	RET		Z
+  507 00:A15C C3 0E A1 -  	JP		LBL_add_score
+  508 00:A15F -  -  -  -  CAL_update_score:
+  509 00:A15F 3E 3A -  -  	LD		A, 58
+  510 00:A161 32 D7 86 -  	LD		(PENCOL), A
+  511 00:A164 3E 2D -  -  	LD		A, 45
+  512 00:A166 32 D8 86 -  	LD		(PENROW), A
+  513 00:A169 21 94 A0 -  	LD		HL, ARR_score
+  514 00:A16C EF -  -  -  			rst 28h 
+  515 00:A16D 61 45 -  -  	.dw _vputs)
+  516 00:A16F C9 -  -  -  	RET											; Fin Score
+  517 00:A170 -  -  -  -  CAL_draw_new_piece:
+  518 00:A170 21 9C AB -  	LD  	HL, INT_piece_relx
+  519 00:A173 36 05 -  -  	LD		(HL), 5
+  520 00:A175 21 9D AB -  	LD  	HL, INT_piece_rely
+  521 00:A178 36 0F -  -  	LD		(HL), 15
+  522 00:A17A 3A 7E AB -  	LD		A, (INT_next_format)
+  523 00:A17D 21 83 AB -  	LD		HL, INT_format
+  524 00:A180 77 -  -  -  	LD		(HL), A
+  525 00:A181 21 88 AB -  	LD		HL, INT_wait_moin_y
+  526 00:A184 36 00 -  -  	LD		(HL), 0
+  527 00:A186 21 89 AB -  	LD		HL, INT_wait_moin_y_2
+  528 00:A189 36 00 -  -  	LD		(HL), 0
+  529 00:A18B EF -  -  -  	rst 28h 
+  530 00:A18C 79 4B -  -  	.dw _RANDOM)
+  531 00:A18E 3E 07 -  -  	LD		A, 7
+  532 00:A190 CD B3 A1 -  	CALL	CAL_random
+  533 00:A193 23 -  -  -  	INC		HL
+  534 00:A194 29 -  -  -  	ADD		HL, HL
+  535 00:A195 54 -  -  -  	LD		D, H
+  536 00:A196 5D -  -  -  	LD		E, L
+  537 00:A197 29 -  -  -  	ADD		HL, HL
+  538 00:A198 29 -  -  -  	ADD		HL, HL
+  539 00:A199 19 -  -  -  	ADD		HL, DE
+  540 00:A19A 54 -  -  -  	LD		D, H
+  541 00:A19B 5D -  -  -  	LD		E, L
+  542 00:A19C 7C -  -  -  	LD		A, H
+  543 00:A19D 85 -  -  -  	ADD		A, L
+  544 00:A19E 21 7E AB -  	LD		HL, INT_next_format
+  545 00:A1A1 77 -  -  -  	LD		(HL), A
+  546 00:A1A2 21 84 AB -  	LD		HL, INT_rot
+  547 00:A1A5 36 00 -  -  	LD		(HL), 0
+  548 00:A1A7 21 7F AB -  	LD		HL, INT_anc_or_new
+  549 00:A1AA 36 03 -  -  	LD		(HL), 3
+  550 00:A1AC CD DF A1 -  	CALL	CAL_draw_next_piece
+  551 00:A1AF CD BF A1 -  	CALL	CAL_draw_piece
+  552 00:A1B2 C9 -  -  -  	RET
+  553 00:A1B3 -  -  -  -  CAL_random:
+  554 00:A1B3 EF -  -  -  			rst 28h 
+  555 00:A1B4 8F 47 -  -  	.dw _setxxop2)
+  556 00:A1B6 EF -  -  -  			rst 28h 
+  557 00:A1B7 84 40 -  -  	.dw _FPMULT)
+  558 00:A1B9 EF -  -  -  			rst 28h 
+  559 00:A1BA EF 4A -  -  	.dw _CONVOP1)
+  560 00:A1BC 7B -  -  -  	LD		A, E 
+  561 00:A1BD EB -  -  -  	EX		DE, HL
+  562 00:A1BE C9 -  -  -  	RET
+  563 00:A1BF -  -  -  -  CAL_draw_piece:
+  564 00:A1BF 3A 9C AB -  	LD		A, (INT_piece_relx)
+  565 00:A1C2 21 9A AB -  	LD  	HL, INT_anc_piece_relx
+  566 00:A1C5 77 -  -  -  	LD		(HL), A
+  567 00:A1C6 3A 9D AB -  	LD		A, (INT_piece_rely)
+  568 00:A1C9 21 9B AB -  	LD  	HL, INT_anc_piece_rely
+  569 00:A1CC 77 -  -  -  	LD		(HL), A
+  570 00:A1CD 3A 83 AB -  	LD		A, (INT_format)
+  571 00:A1D0 21 85 AB -  	LD		HL, INT_anc_format
+  572 00:A1D3 77 -  -  -  	LD		(HL), A
+  573 00:A1D4 3A 84 AB -  	LD		A, (INT_rot)
+  574 00:A1D7 21 86 AB -  	LD		HL, INT_anc_rot
+  575 00:A1DA 77 -  -  -  	LD		(HL), A
+  576 00:A1DB CD 38 A2 -  	CALL	CAL_put_piece_mtx
+  577 00:A1DE C9 -  -  -  	RET
+  578 00:A1DF -  -  -  -  CAL_draw_next_piece:							; Début Next Piece
+  579 00:A1DF 21 8A AB -  	LD		HL, INT_sp_piece_relx
+  580 00:A1E2 36 12 -  -  	LD		(HL), 18
+  581 00:A1E4 21 8B AB -  	LD		HL, INT_sp_piece_rely
+  582 00:A1E7 36 07 -  -  	LD		(HL), 7
+  583 00:A1E9 CD ED A1 -  	CALL	CAL_next_piece_mtx
+  584 00:A1EC C9 -  -  -  	RET
+  585 00:A1ED -  -  -  -  CAL_next_piece_mtx:
+  586 00:A1ED CD D0 A6 -  	CALL	CAL_checkup_mtx_1
+  587 00:A1F0 21 96 AB -  	LD		HL, INT_ppiece_relx
+  588 00:A1F3 36 00 -  -  	LD		(HL), 0
+  589 00:A1F5 21 97 AB -  	LD		HL, INT_ppiece_rely
+  590 00:A1F8 36 00 -  -  	LD		(HL), 0
+  591 00:A1FA C3 FE A1 -  	JP		LBL_next_piece_mtx
+  592 00:A1FD -  -  -  -  INT_a_buf:
+  593 00:A1FD 00 -  -  -  	.DB		0
+  594 00:A1FE -  -  -  -  LBL_next_piece_mtx:
+  595 00:A1FE CD DB A6 -  	CALL	CAL_checkup_mtx_2
+  596 00:A201 21 FD A1 -  	LD		HL, INT_a_buf
+  597 00:A204 77 -  -  -  	LD		(HL), A
+  598 00:A205 CD 73 A8 -  	CALL	CAL_ppiece_off
+  599 00:A208 3A FD A1 -  	LD		A, (INT_a_buf)
+  600 00:A20B FE 01 -  -  	CP		1
+  601 00:A20D CC 61 A8 -  	CALL	Z, CAL_ppiece_on
+  602 00:A210 C3 13 A2 -  	JP		LBL_next_piece_mtx_addx
+  603 00:A213 -  -  -  -  LBL_next_piece_mtx_addx:
+  604 00:A213 3A 96 AB -  	LD		A, (INT_ppiece_relx)
+  605 00:A216 3C -  -  -  	INC		A
+  606 00:A217 21 96 AB -  	LD		HL, INT_ppiece_relx
+  607 00:A21A 77 -  -  -  	LD		(HL), A
+  608 00:A21B CD 03 A7 -  	CALL	CAL_checkup_mtx_4
+  609 00:A21E CA 24 A2 -  	JP		Z, LBL_next_piece_mtx_addy
+  610 00:A221 C3 FE A1 -  	JP		LBL_next_piece_mtx
+  611 00:A224 -  -  -  -  LBL_next_piece_mtx_addy:
+  612 00:A224 21 96 AB -  	LD		HL, INT_ppiece_relx
+  613 00:A227 36 00 -  -  	LD		(HL), 0
+  614 00:A229 3A 97 AB -  	LD		A, (INT_ppiece_rely)
+  615 00:A22C 3C -  -  -  	INC		A
+  616 00:A22D 21 97 AB -  	LD		HL, INT_ppiece_rely
+  617 00:A230 77 -  -  -  	LD		(HL), A
+  618 00:A231 CD 0E A7 -  	CALL	CAL_checkup_mtx_5
+  619 00:A234 C8 -  -  -  	RET		Z
+  620 00:A235 C3 FE A1 -  	JP		LBL_next_piece_mtx					; Fin Next Piece
+  621 00:A238 -  -  -  -  CAL_put_piece_mtx:								; Début Mettre Piece dans MTX
+  622 00:A238 CD D0 A6 -  	CALL	CAL_checkup_mtx_1
+  623 00:A23B C3 3E A2 -  	JP		LBL_put_piece_mtx
+  624 00:A23E -  -  -  -  LBL_put_piece_mtx:
+  625 00:A23E CD DB A6 -  	CALL	CAL_checkup_mtx_2
+  626 00:A241 FE 01 -  -  	CP		1
+  627 00:A243 CA 4C A2 -  	JP		Z, LBL_put_piece_mtx_add
+  628 00:A246 C3 57 A2 -  	JP		LBL_put_piece_mtx_addx
+  629 00:A249 -  -  -  -  CALL_put_piece_mtx_add_bug:
+  630 00:A249 3C -  -  -  	INC		A
+  631 00:A24A 77 -  -  -  	LD		(HL), A
+  632 00:A24B C9 -  -  -  	RET
+  633 00:A24C -  -  -  -  LBL_put_piece_mtx_add:
+  634 00:A24C CD EA A6 -  	CALL	CAL_checkup_mtx_3
+  635 00:A24F FE 04 -  -  	CP		4
+  636 00:A251 C4 49 A2 -  	CALL	NZ, CALL_put_piece_mtx_add_bug
+  637 00:A254 C3 57 A2 -  	JP		LBL_put_piece_mtx_addx
+  638 00:A257 -  -  -  -  LBL_put_piece_mtx_addx:
+  639 00:A257 CD 03 A7 -  	CALL	CAL_checkup_mtx_4
+  640 00:A25A CA 60 A2 -  	JP		Z, LBL_put_piece_mtx_addy
+  641 00:A25D C3 3E A2 -  	JP		LBL_put_piece_mtx
+  642 00:A260 -  -  -  -  LBL_put_piece_mtx_addy:
+  643 00:A260 CD 0E A7 -  	CALL	CAL_checkup_mtx_5
+  644 00:A263 C8 -  -  -  	RET		Z
+  645 00:A264 C3 3E A2 -  	JP		LBL_put_piece_mtx					; Fin Mettre Piece dans MTX
+  646 00:A267 -  -  -  -  CAL_check_for_collision:						; Début Check Collision
+  647 00:A267 CD D0 A6 -  	CALL	CAL_checkup_mtx_1
+  648 00:A26A 21 80 AB -  	LD		HL, INT_collision_detecte
+  649 00:A26D 36 00 -  -  	LD		(HL), 0
+  650 00:A26F C3 72 A2 -  	JP		LBL_check_for_collision
+  651 00:A272 -  -  -  -  LBL_check_for_collision:
+  652 00:A272 CD DB A6 -  	CALL	CAL_checkup_mtx_2
+  653 00:A275 FE 01 -  -  	CP		1
+  654 00:A277 CA 7D A2 -  	JP		Z, LBL_check_for_collision_2
+  655 00:A27A C3 8A A2 -  	JP		LBL_check_for_collision_addx
+  656 00:A27D -  -  -  -  LBL_check_for_collision_2:
+  657 00:A27D CD EA A6 -  	CALL	CAL_checkup_mtx_3
+  658 00:A280 5F -  -  -  	LD		E, A
+  659 00:A281 7B -  -  -  	LD		A, E
+  660 00:A282 FE 03 -  -  	CP		3
+  661 00:A284 CA 9A A2 -  	JP		Z, CAL_collision_detecte
+  662 00:A287 C3 8A A2 -  	JP		LBL_check_for_collision_addx
+  663 00:A28A -  -  -  -  LBL_check_for_collision_addx:
+  664 00:A28A CD 03 A7 -  	CALL	CAL_checkup_mtx_4
+  665 00:A28D CA 93 A2 -  	JP		Z, LBL_check_for_collision_addy
+  666 00:A290 C3 72 A2 -  	JP		LBL_check_for_collision
+  667 00:A293 -  -  -  -  LBL_check_for_collision_addy:
+  668 00:A293 CD 0E A7 -  	CALL	CAL_checkup_mtx_5
+  669 00:A296 C8 -  -  -  	RET		Z
+  670 00:A297 C3 72 A2 -  	JP		LBL_check_for_collision	
+  671 00:A29A -  -  -  -  CAL_collision_detecte:
+  672 00:A29A 3A 9D AB -  	LD		A, (INT_piece_rely)
+  673 00:A29D 5F -  -  -  	LD		E, A
+  674 00:A29E 3A 9A AB -  	LD		A, (INT_anc_piece_relx)
+  675 00:A2A1 21 9C AB -  	LD  	HL, INT_piece_relx
+  676 00:A2A4 77 -  -  -  	LD		(HL), A
+  677 00:A2A5 3A 9B AB -  	LD		A, (INT_anc_piece_rely)
+  678 00:A2A8 21 9D AB -  	LD  	HL, INT_piece_rely
+  679 00:A2AB 77 -  -  -  	LD		(HL), A
+  680 00:A2AC 3A 85 AB -  	LD		A, (INT_anc_format)
+  681 00:A2AF 21 83 AB -  	LD		HL, INT_format
+  682 00:A2B2 77 -  -  -  	LD		(HL), A
+  683 00:A2B3 3A 86 AB -  	LD		A, (INT_anc_rot)
+  684 00:A2B6 21 84 AB -  	LD		HL, INT_rot
+  685 00:A2B9 77 -  -  -  	LD		(HL), A
+  686 00:A2BA 21 80 AB -  	LD		HL, INT_collision_detecte
+  687 00:A2BD 36 01 -  -  	LD		(HL), 1
+  688 00:A2BF 3A 9B AB -  	LD		A, (INT_anc_piece_rely)
+  689 00:A2C2 BB -  -  -  	CP		E
+  690 00:A2C3 C2 C8 A2 -  	JP		NZ, CAL_collision_bas
+  691 00:A2C6 C9 -  -  -  	RET											; Fin Check Collision
+  692 00:A2C7 -  -  -  -  INT_coll_buf2:
+  693 00:A2C7 00 -  -  -  	.DB		0
+  694 00:A2C8 -  -  -  -  CAL_collision_bas:								; Début Collision Bas
+  695 00:A2C8 3A 9D AB -  	LD		A, (INT_piece_rely)
+  696 00:A2CB FE 0F -  -  	CP		15
+  697 00:A2CD CA 98 9E -  	JP		Z, LBL_quit
+  698 00:A2D0 21 F4 A0 -  	LD		HL, INT_score_10000
+  699 00:A2D3 36 00 -  -  	LD		(HL), 0
+  700 00:A2D5 21 F5 A0 -  	LD		HL, INT_score_1000
+  701 00:A2D8 36 00 -  -  	LD		(HL), 0
+  702 00:A2DA 21 F6 A0 -  	LD		HL, INT_score_100
+  703 00:A2DD 36 00 -  -  	LD		(HL), 0
+  704 00:A2DF 21 F7 A0 -  	LD		HL, INT_score_10
+  705 00:A2E2 36 00 -  -  	LD		(HL), 0
+  706 00:A2E4 21 F8 A0 -  	LD		HL, INT_score_1
+  707 00:A2E7 36 08 -  -  	LD		(HL), 8
+  708 00:A2E9 CD FC A0 -  	CALL	CAL_add_score
+  709 00:A2EC CD D0 A6 -  	CALL	CAL_checkup_mtx_1
+  710 00:A2EF C3 F2 A2 -  	JP		LBL_collision_bas
+  711 00:A2F2 -  -  -  -  LBL_collision_bas:
+  712 00:A2F2 CD DB A6 -  	CALL	CAL_checkup_mtx_2
+  713 00:A2F5 FE 01 -  -  	CP		1
+  714 00:A2F7 CA FD A2 -  	JP		Z, LBL_collision_bas_add
+  715 00:A2FA C3 21 A3 -  	JP		LBL_collision_bas_addx
+  716 00:A2FD -  -  -  -  LBL_collision_bas_add:
+  717 00:A2FD CD EA A6 -  	CALL	CAL_checkup_mtx_3
+  718 00:A300 36 03 -  -  	LD		(HL), 3
+  719 00:A302 21 D0 AE -  	LD		HL, MTX_skin
+  720 00:A305 3A 8C AB -  	LD		A, (INT_put_piece_mtx_x)
+  721 00:A308 5F -  -  -  	LD		E, A
+  722 00:A309 3A 9C AB -  	LD		A, (INT_piece_relx)
+  723 00:A30C 83 -  -  -  	ADD		A, E
+  724 00:A30D 47 -  -  -  	LD		B, A
+  725 00:A30E 3A 8D AB -  	LD		A, (INT_put_piece_mtx_y)
+  726 00:A311 5F -  -  -  	LD		E, A
+  727 00:A312 3A 9D AB -  	LD		A, (INT_piece_rely)
+  728 00:A315 83 -  -  -  	ADD		A, E
+  729 00:A316 4F -  -  -   	LD		C, A
+  730 00:A317 CD 5F AB -  	CALL	CAL_mtx_13
+  731 00:A31A 3A 83 AB -  	LD		A, (INT_format)
+  732 00:A31D 77 -  -  -  	LD		(HL), A
+  733 00:A31E C3 21 A3 -  	JP		LBL_collision_bas_addx
+  734 00:A321 -  -  -  -  LBL_collision_bas_addx:
+  735 00:A321 CD 03 A7 -  	CALL	CAL_checkup_mtx_4
+  736 00:A324 CA 2A A3 -  	JP		Z, LBL_collision_bas_addy
+  737 00:A327 C3 F2 A2 -  	JP		LBL_collision_bas
+  738 00:A32A -  -  -  -  LBL_collision_bas_addy:
+  739 00:A32A CD 0E A7 -  	CALL	CAL_checkup_mtx_5
+  740 00:A32D 21 C7 A2 -  	LD		HL, INT_coll_buf2
+  741 00:A330 77 -  -  -  	LD		(HL), A
+  742 00:A331 FE 04 -  -  	CP		4
+  743 00:A333 CC 3C A5 -  	CALL	Z, CAL_check_line
+  744 00:A336 3A C7 A2 -  	LD		A, (INT_coll_buf2)
+  745 00:A339 FE 04 -  -  	CP		4
+  746 00:A33B CC 70 A1 -  	CALL	Z, CAL_draw_new_piece
+  747 00:A33E 3A C7 A2 -  	LD		A, (INT_coll_buf2)
+  748 00:A341 C8 -  -  -  	RET		Z
+  749 00:A342 C3 F2 A2 -  	JP		LBL_collision_bas					; Fin Collision Bas
+  750 00:A345 -  -  -  -  INT_exchange_line:
+  751 00:A345 00 -  -  -  	.DB		0
+  752 00:A346 -  -  -  -  MTX_exchange_line:
+  753 00:A346 00 00 00 00 	.DB		0, 0, 0, 0
+  754 00:A34A -  -  -  -  INT_exchange_line_x:
+  755 00:A34A 00 -  -  -  	.DB		0
+  756 00:A34B -  -  -  -  INT_exchange_line_current_y:
+  757 00:A34B 00 -  -  -  	.DB		0
+  758 00:A34C -  -  -  -  INT_exchange_line_many_y:
+  759 00:A34C 00 -  -  -  	.DB		0
+  760 00:A34D -  -  -  -  INT_exchange_line_sum:
+  761 00:A34D 00 -  -  -  	.DB		0
+  762 00:A34E -  -  -  -  INT_exchange_line_last:
+  763 00:A34E 00 -  -  -  	.DB		0
+  764 00:A34F -  -  -  -  INT_exchange_line_VX:
+  765 00:A34F 00 -  -  -  	.DB		0
+  766 00:A350 -  -  -  -  INT_exchange_line_VY:
+  767 00:A350 00 -  -  -  	.DB		0
+  768 00:A351 -  -  -  -  INT_exchange_line_buf:
+  769 00:A351 00 -  -  -  	.DB		0
+  770 00:A352 -  -  -  -  INT_exchange_line_0:
+  771 00:A352 00 -  -  -  	.DB		0
+  772 00:A353 -  -  -  -  LBL_exchange_line:								; Exchange Line
+  773 00:A353 3A 45 A3 -  	LD		A, (INT_exchange_line)
+  774 00:A356 FE 00 -  -  	CP		0
+  775 00:A358 C8 -  -  -  	RET		Z
+  776 00:A359 21 4D A3 -  	LD		HL, INT_exchange_line_sum
+  777 00:A35C 36 00 -  -  	LD		(HL), 0
+  778 00:A35E 21 4E A3 -  	LD		HL, INT_exchange_line_last
+  779 00:A361 36 00 -  -  	LD		(HL), 0
+  780 00:A363 21 CC A4 -  	LD		HL, INT_exchange_line_02
+  781 00:A366 36 00 -  -  	LD		(HL), 0
+  782 00:A368 C3 6B A3 -  	JP		LBL_exchange_line_2
+  783 00:A36B -  -  -  -  LBL_exchange_line_2:
+  784 00:A36B 21 52 A3 -  	LD		HL, INT_exchange_line_0
+  785 00:A36E 36 00 -  -  	LD		(HL), 0
+  786 00:A370 21 4A A3 -  	LD		HL, INT_exchange_line_x
+  787 00:A373 36 00 -  -  	LD		(HL), 0
+  788 00:A375 21 46 A3 -  	LD		HL, MTX_exchange_line
+  789 00:A378 3A 4D A3 -  	LD		A, (INT_exchange_line_sum)
+  790 00:A37B 47 -  -  -  	LD		B, A
+  791 00:A37C 0E 00 -  -  	LD		C, 0
+  792 00:A37E CD 48 AB -  	CALL	CAL_mtx_4
+  793 00:A381 21 4B A3 -  	LD		HL, INT_exchange_line_current_y
+  794 00:A384 77 -  -  -  	LD		(HL), A
+  795 00:A385 3A 45 A3 -  	LD		A, (INT_exchange_line)
+  796 00:A388 3D -  -  -  	DEC		A
+  797 00:A389 5F -  -  -  	LD		E, A
+  798 00:A38A 3A 4D A3 -  	LD		A, (INT_exchange_line_sum)
+  799 00:A38D BB -  -  -  	CP		E
+  800 00:A38E CA 94 A3 -  	JP		Z, LBL_exchange_line_last
+  801 00:A391 C3 B9 A3 -  	JP		LBL_schange_line_not_last
+  802 00:A394 -  -  -  -  LBL_exchange_line_last:
+  803 00:A394 3A 4B A3 -  	LD		A, (INT_exchange_line_current_y)
+  804 00:A397 5F -  -  -  	LD		E, A
+  805 00:A398 3E 0F -  -  	LD		A, 15
+  806 00:A39A 93 -  -  -  	SUB		E
+  807 00:A39B 21 4C A3 -  	LD		HL, INT_exchange_line_many_y
+  808 00:A39E 77 -  -  -  	LD		(HL), A
+  809 00:A39F 21 4E A3 -  	LD		HL, INT_exchange_line_last
+  810 00:A3A2 36 01 -  -  	LD		(HL), 1
+  811 00:A3A4 3A 4B A3 -  	LD		A, (INT_exchange_line_current_y)
+  812 00:A3A7 3C -  -  -  	INC		A
+  813 00:A3A8 21 50 A3 -  	LD		HL, INT_exchange_line_VY
+  814 00:A3AB 77 -  -  -  	LD		(HL), A
+  815 00:A3AC 3A 4D A3 -  	LD		A, (INT_exchange_line_sum)
+  816 00:A3AF 3C -  -  -  	INC		A
+  817 00:A3B0 21 4D A3 -  	LD		HL, INT_exchange_line_sum
+  818 00:A3B3 77 -  -  -  	LD		(HL), A
+  819 00:A3B4 C3 EF A3 -  	JP		LBL_exchange_line_3
+  820 00:A3B7 -  -  -  -  INT_aaad:
+  821 00:A3B7 00 00 -  -  	.DB		0, 0
+  822 00:A3B9 -  -  -  -  LBL_schange_line_not_last:
+  823 00:A3B9 3A 4D A3 -  	LD		A, (INT_exchange_line_sum)
+  824 00:A3BC 3C -  -  -  	INC		A
+  825 00:A3BD 21 4D A3 -  	LD		HL, INT_exchange_line_sum
+  826 00:A3C0 77 -  -  -  	LD		(HL), A
+  827 00:A3C1 47 -  -  -  	LD		B, A
+  828 00:A3C2 0E 00 -  -  	LD		C, 0
+  829 00:A3C4 21 46 A3 -  	LD		HL, MTX_exchange_line
+  830 00:A3C7 CD 48 AB -  	CALL	CAL_mtx_4
+  831 00:A3CA 47 -  -  -  	LD		B, A
+  832 00:A3CB 3A 4B A3 -  	LD		A, (INT_exchange_line_current_y)
+  833 00:A3CE 5F -  -  -  	LD		E, A
+  834 00:A3CF 78 -  -  -  	LD		A, B
+  835 00:A3D0 93 -  -  -  	SUB		E
+  836 00:A3D1 3D -  -  -  	DEC		A
+  837 00:A3D2 FE 00 -  -  	CP		0
+  838 00:A3D4 CA 6B A3 -  	JP		Z, LBL_exchange_line_2
+  839 00:A3D7 21 4C A3 -  	LD		HL, INT_exchange_line_many_y
+  840 00:A3DA 77 -  -  -  	LD		(HL), A
+  841 00:A3DB 3A 4B A3 -  	LD		A, (INT_exchange_line_current_y)
+  842 00:A3DE 3C -  -  -  	INC		A
+  843 00:A3DF 21 50 A3 -  	LD		HL, INT_exchange_line_VY
+  844 00:A3E2 77 -  -  -  	LD		(HL), A
+  845 00:A3E3 C3 EF A3 -  	JP		LBL_exchange_line_3
+  846 00:A3E6 -  -  -  -  LBL_exchange_line_checkend:
+  847 00:A3E6 3A 4E A3 -  	LD		A, (INT_exchange_line_last)
+  848 00:A3E9 FE 01 -  -  	CP		1
+  849 00:A3EB C8 -  -  -  	RET		Z
+  850 00:A3EC C3 6B A3 -  	JP		LBL_exchange_line_2
+  851 00:A3EF -  -  -  -  LBL_exchange_line_3:
+  852 00:A3EF 21 52 A3 -  	LD		HL, INT_exchange_line_0
+  853 00:A3F2 36 00 -  -  	LD		(HL), 0
+  854 00:A3F4 21 4F A3 -  	LD		HL, INT_exchange_line_VX
+  855 00:A3F7 36 01 -  -  	LD		(HL), 1
+  856 00:A3F9 C3 21 A4 -  	JP		LBL_exchange_line_4
+  857 00:A3FC -  -  -  -  LBL_exchange_line_3_addx:
+  858 00:A3FC 21 CC A4 -  	LD		HL, INT_exchange_line_02
+  859 00:A3FF 36 00 -  -  	LD		(HL), 0
+  860 00:A401 3A 4C A3 -  	LD		A, (INT_exchange_line_many_y)
+  861 00:A404 5F -  -  -  	LD		E, A
+  862 00:A405 3A 4A A3 -  	LD		A, (INT_exchange_line_x)
+  863 00:A408 3C -  -  -  	INC		A
+  864 00:A409 21 4A A3 -  	LD		HL, INT_exchange_line_x
+  865 00:A40C 77 -  -  -  	LD		(HL), A
+  866 00:A40D BB -  -  -  	CP		E
+  867 00:A40E CA E6 A3 -  	JP		Z, LBL_exchange_line_checkend
+  868 00:A411 3A 50 A3 -  	LD		A, (INT_exchange_line_VY)
+  869 00:A414 3C -  -  -  	INC		A
+  870 00:A415 21 50 A3 -  	LD		HL, INT_exchange_line_VY
+  871 00:A418 77 -  -  -  	LD		(HL), A
+  872 00:A419 FE 10 -  -  	CP		16
+  873 00:A41B D2 E6 A3 -  	JP		NC, LBL_exchange_line_checkend
+  874 00:A41E C3 EF A3 -  	JP		LBL_exchange_line_3
+  875 00:A421 -  -  -  -  LBL_exchange_line_4:
+  876 00:A421 21 CC AD -  	LD		HL, MTX_collision
+  877 00:A424 3A 4F A3 -  	LD		A, (INT_exchange_line_VX)
+  878 00:A427 47 -  -  -  	LD		B, A
+  879 00:A428 3A 50 A3 -  	LD		A, (INT_exchange_line_VY)
+  880 00:A42B 4F -  -  -   	LD		C, A
+  881 00:A42C CD 5F AB -  	CALL	CAL_mtx_13
+  882 00:A42F 36 00 -  -  	LD		(HL), 0
+  883 00:A431 21 51 A3 -  	LD		HL, INT_exchange_line_buf
+  884 00:A434 77 -  -  -  	LD		(HL), A
+  885 00:A435 21 CC AD -  	LD		HL, MTX_collision
+  886 00:A438 3A 4F A3 -  	LD		A, (INT_exchange_line_VX)
+  887 00:A43B 47 -  -  -  	LD		B, A
+  888 00:A43C 3A 4D A3 -  	LD		A, (INT_exchange_line_sum)
+  889 00:A43F 5F -  -  -  	LD		E, A
+  890 00:A440 3A 50 A3 -  	LD		A, (INT_exchange_line_VY)
+  891 00:A443 93 -  -  -  	SUB		E
+  892 00:A444 4F -  -  -   	LD		C, A
+  893 00:A445 CD 5F AB -  	CALL	CAL_mtx_13
+  894 00:A448 3A 51 A3 -  	LD		A, (INT_exchange_line_buf)
+  895 00:A44B 77 -  -  -  	LD		(HL), A
+  896 00:A44C 21 D0 AE -  	LD		HL, MTX_skin
+  897 00:A44F 3A 4F A3 -  	LD		A, (INT_exchange_line_VX)
+  898 00:A452 47 -  -  -  	LD		B, A
+  899 00:A453 3A 50 A3 -  	LD		A, (INT_exchange_line_VY)
+  900 00:A456 4F -  -  -   	LD		C, A
+  901 00:A457 CD 5F AB -  	CALL	CAL_mtx_13
+  902 00:A45A 36 00 -  -  	LD		(HL), 0
+  903 00:A45C CD CD A4 -  	CALL	CAL_exc_sp
+  904 00:A45F 3A 82 AB -  	LD		A, (INT_piece_skin)
+  905 00:A462 FE 00 -  -  	CP		0
+  906 00:A464 CC BA A4 -  	CALL	Z, CAL_exc_sp2
+  907 00:A467 3A 4F A3 -  	LD		A, (INT_exchange_line_VX)
+  908 00:A46A 21 8A AB -  	LD		HL, INT_sp_piece_relx
+  909 00:A46D 77 -  -  -  	LD		(HL), A
+  910 00:A46E 3A 50 A3 -  	LD		A, (INT_exchange_line_VY)
+  911 00:A471 21 8B AB -  	LD		HL, INT_sp_piece_rely
+  912 00:A474 77 -  -  -  	LD		(HL), A
+  913 00:A475 CD 73 A8 -  	CALL	CAL_ppiece_off
+  914 00:A478 21 D0 AE -  	LD		HL, MTX_skin
+  915 00:A47B 3A 4F A3 -  	LD		A, (INT_exchange_line_VX)
+  916 00:A47E 47 -  -  -  	LD		B, A
+  917 00:A47F 3A 4D A3 -  	LD		A, (INT_exchange_line_sum)
+  918 00:A482 5F -  -  -  	LD		E, A
+  919 00:A483 3A 50 A3 -  	LD		A, (INT_exchange_line_VY)
+  920 00:A486 93 -  -  -  	SUB		E
+  921 00:A487 4F -  -  -   	LD		C, A
+  922 00:A488 CD 5F AB -  	CALL	CAL_mtx_13
+  923 00:A48B 3A 82 AB -  	LD		A, (INT_piece_skin)
+  924 00:A48E 87 -  -  -  	ADD		A, A
+  925 00:A48F 5F -  -  -  	LD		E, A
+  926 00:A490 87 -  -  -  	ADD		A, A
+  927 00:A491 87 -  -  -  	ADD		A, A
+  928 00:A492 83 -  -  -  	ADD		A, E
+  929 00:A493 77 -  -  -  	LD		(HL), A
+  930 00:A494 3A 4F A3 -  	LD		A, (INT_exchange_line_VX)
+  931 00:A497 21 8A AB -  	LD		HL, INT_sp_piece_relx
+  932 00:A49A 77 -  -  -  	LD		(HL), A
+  933 00:A49B 3A 4D A3 -  	LD		A, (INT_exchange_line_sum)
+  934 00:A49E 5F -  -  -  	LD		E, A
+  935 00:A49F 3A 50 A3 -  	LD		A, (INT_exchange_line_VY)
+  936 00:A4A2 93 -  -  -  	SUB		E
+  937 00:A4A3 21 8B AB -  	LD		HL, INT_sp_piece_rely
+  938 00:A4A6 77 -  -  -  	LD		(HL), A
+  939 00:A4A7 3A 82 AB -  	LD		A, (INT_piece_skin)
+  940 00:A4AA FE 00 -  -  	CP		0
+  941 00:A4AC CC 73 A8 -  	CALL	Z, CAL_ppiece_off
+  942 00:A4AF 3A 82 AB -  	LD		A, (INT_piece_skin)
+  943 00:A4B2 FE 00 -  -  	CP		0
+  944 00:A4B4 C4 61 A8 -  	CALL	NZ, CAL_ppiece_on
+  945 00:A4B7 C3 26 A5 -  	JP		LBL_exchange_line_4_addx
+  946 00:A4BA -  -  -  -  CAL_exc_sp2:
+  947 00:A4BA 3A 4E A3 -  	LD		A, (INT_exchange_line_last)
+  948 00:A4BD FE 01 -  -  	CP		1
+  949 00:A4BF CA C3 A4 -  	JP		Z, LBL_exc_sp3
+  950 00:A4C2 C9 -  -  -  	RET
+  951 00:A4C3 -  -  -  -  LBL_exc_sp3:
+  952 00:A4C3 3A 52 A3 -  	LD		A, (INT_exchange_line_0)
+  953 00:A4C6 3C -  -  -  	INC		A
+  954 00:A4C7 21 52 A3 -  	LD		HL, INT_exchange_line_0
+  955 00:A4CA 77 -  -  -  	LD		(HL), A
+  956 00:A4CB C9 -  -  -  	RET
+  957 00:A4CC -  -  -  -  INT_exchange_line_02:
+  958 00:A4CC 00 -  -  -  	.DB		0
+  959 00:A4CD -  -  -  -  CAL_exc_sp:
+  960 00:A4CD FE 00 -  -  	CP		0
+  961 00:A4CF CC F6 A4 -  	CALL	Z, CAL_exc_sp_0
+  962 00:A4D2 FE 0A -  -  	CP		10
+  963 00:A4D4 CC FC A4 -  	CALL	Z, CAL_exc_sp_1
+  964 00:A4D7 FE 14 -  -  	CP		20
+  965 00:A4D9 CC 02 A5 -  	CALL	Z, CAL_exc_sp_2
+  966 00:A4DC FE 1E -  -  	CP		30
+  967 00:A4DE CC 08 A5 -  	CALL	Z, CAL_exc_sp_3
+  968 00:A4E1 FE 28 -  -  	CP		40
+  969 00:A4E3 CC 0E A5 -  	CALL	Z, CAL_exc_sp_4
+  970 00:A4E6 FE 32 -  -  	CP		50
+  971 00:A4E8 CC 14 A5 -  	CALL	Z, CAL_exc_sp_5
+  972 00:A4EB FE 3C -  -  	CP		60
+  973 00:A4ED CC 1A A5 -  	CALL	Z, CAL_exc_sp_6
+  974 00:A4F0 FE 46 -  -  	CP		70
+  975 00:A4F2 CC 20 A5 -  	CALL	Z, CAL_exc_sp_7
+  976 00:A4F5 C9 -  -  -  	RET
+  977 00:A4F6 -  -  -  -  CAL_exc_sp_0:
+  978 00:A4F6 21 82 AB -  	LD		HL, INT_piece_skin
+  979 00:A4F9 36 00 -  -  	LD		(HL), 0
+  980 00:A4FB C9 -  -  -  	RET
+  981 00:A4FC -  -  -  -  CAL_exc_sp_1:
+  982 00:A4FC 21 82 AB -  	LD		HL, INT_piece_skin
+  983 00:A4FF 36 01 -  -  	LD		(HL), 1
+  984 00:A501 C9 -  -  -  	RET
+  985 00:A502 -  -  -  -  CAL_exc_sp_2:
+  986 00:A502 21 82 AB -  	LD		HL, INT_piece_skin
+  987 00:A505 36 02 -  -  	LD		(HL), 2
+  988 00:A507 C9 -  -  -  	RET
+  989 00:A508 -  -  -  -  CAL_exc_sp_3:
+  990 00:A508 21 82 AB -  	LD		HL, INT_piece_skin
+  991 00:A50B 36 03 -  -  	LD		(HL), 3
+  992 00:A50D C9 -  -  -  	RET
+  993 00:A50E -  -  -  -  CAL_exc_sp_4:
+  994 00:A50E 21 82 AB -  	LD		HL, INT_piece_skin
+  995 00:A511 36 04 -  -  	LD		(HL), 4
+  996 00:A513 C9 -  -  -  	RET
+  997 00:A514 -  -  -  -  CAL_exc_sp_5:
+  998 00:A514 21 82 AB -  	LD		HL, INT_piece_skin
+  999 00:A517 36 05 -  -  	LD		(HL), 5
+ 1000 00:A519 C9 -  -  -  	RET
+ 1001 00:A51A -  -  -  -  CAL_exc_sp_6:
+ 1002 00:A51A 21 82 AB -  	LD		HL, INT_piece_skin
+ 1003 00:A51D 36 06 -  -  	LD		(HL), 6
+ 1004 00:A51F C9 -  -  -  	RET
+ 1005 00:A520 -  -  -  -  CAL_exc_sp_7:
+ 1006 00:A520 21 82 AB -  	LD		HL, INT_piece_skin
+ 1007 00:A523 36 07 -  -  	LD		(HL), 7
+ 1008 00:A525 C9 -  -  -  	RET
+ 1009 00:A526 -  -  -  -  LBL_exchange_line_4_addx:
+ 1010 00:A526 3A 52 A3 -  	LD		A, (INT_exchange_line_0)
+ 1011 00:A529 FE 0B -  -  	CP		11
+ 1012 00:A52B C8 -  -  -  	RET		Z
+ 1013 00:A52C 3A 4F A3 -  	LD		A, (INT_exchange_line_VX)
+ 1014 00:A52F 3C -  -  -  	INC		A
+ 1015 00:A530 21 4F A3 -  	LD		HL, INT_exchange_line_VX
+ 1016 00:A533 77 -  -  -  	LD		(HL), A
+ 1017 00:A534 FE 0C -  -  	CP		12
+ 1018 00:A536 CA FC A3 -  	JP		Z, LBL_exchange_line_3_addx
+ 1019 00:A539 C3 21 A4 -  	JP		LBL_exchange_line_4
+ 1020 00:A53C -  -  -  -  CAL_check_line:									; CHECK LINE !
+ 1021 00:A53C 21 45 A3 -  	LD		HL, INT_exchange_line
+ 1022 00:A53F 36 00 -  -  	LD		(HL), 0
+ 1023 00:A541 CD D0 A6 -  	CALL	CAL_checkup_mtx_1
+ 1024 00:A544 C3 47 A5 -  	JP		LBL_check_line
+ 1025 00:A547 -  -  -  -  LBL_check_line:
+ 1026 00:A547 21 CE A6 -  	LD		HL, INT_check_line_x
+ 1027 00:A54A 36 00 -  -  	LD		(HL), 0
+ 1028 00:A54C 21 CF A6 -  	LD		HL, INT_check_line_cumsum
+ 1029 00:A54F 36 00 -  -  	LD		(HL), 0
+ 1030 00:A551 CD DB A6 -  	CALL	CAL_checkup_mtx_2
+ 1031 00:A554 FE 01 -  -  	CP		1
+ 1032 00:A556 CA 6E A5 -  	JP		Z, LBL_check_line_2
+ 1033 00:A559 C3 5C A5 -  	JP		LBL_check_line_addx
+ 1034 00:A55C -  -  -  -  LBL_check_line_addx:
+ 1035 00:A55C CD 03 A7 -  	CALL	CAL_checkup_mtx_4
+ 1036 00:A55F CA 65 A5 -  	JP		Z, LBL_check_line_addy
+ 1037 00:A562 C3 47 A5 -  	JP		LBL_check_line
+ 1038 00:A565 -  -  -  -  LBL_check_line_addy:
+ 1039 00:A565 CD 0E A7 -  	CALL	CAL_checkup_mtx_5
+ 1040 00:A568 CA 53 A3 -  	JP		Z, LBL_exchange_line
+ 1041 00:A56B C3 47 A5 -  	JP		LBL_check_line
+ 1042 00:A56E -  -  -  -  LBL_check_line_2:
+ 1043 00:A56E 21 CC AD -  	LD		HL, MTX_collision
+ 1044 00:A571 3A CE A6 -  	LD		A, (INT_check_line_x)
+ 1045 00:A574 47 -  -  -  	LD		B, A
+ 1046 00:A575 3A 8D AB -  	LD		A, (INT_put_piece_mtx_y)
+ 1047 00:A578 5F -  -  -  	LD		E, A
+ 1048 00:A579 3A 9D AB -  	LD		A, (INT_piece_rely)
+ 1049 00:A57C 83 -  -  -  	ADD		A, E
+ 1050 00:A57D 4F -  -  -   	LD		C, A
+ 1051 00:A57E CD 5F AB -  	CALL	CAL_mtx_13
+ 1052 00:A581 5F -  -  -  	LD		E, A
+ 1053 00:A582 3A CF A6 -  	LD		A, (INT_check_line_cumsum)
+ 1054 00:A585 83 -  -  -  	ADD		A, E
+ 1055 00:A586 21 CF A6 -  	LD		HL, INT_check_line_cumsum
+ 1056 00:A589 77 -  -  -  	LD		(HL), A
+ 1057 00:A58A C3 8D A5 -  	JP		LBL_check_line_2_addx
+ 1058 00:A58D -  -  -  -  LBL_check_line_2_addx:
+ 1059 00:A58D 3A CE A6 -  	LD		A, (INT_check_line_x)
+ 1060 00:A590 3C -  -  -  	INC		A
+ 1061 00:A591 21 CE A6 -  	LD		HL, INT_check_line_x
+ 1062 00:A594 77 -  -  -  	LD		(HL), A
+ 1063 00:A595 FE 0D -  -  	CP		13
+ 1064 00:A597 CA 9D A5 -  	JP		Z, LBL_check_line_2_end
+ 1065 00:A59A C3 6E A5 -  	JP		LBL_check_line_2
+ 1066 00:A59D -  -  -  -  LBL_check_line_2_end:
+ 1067 00:A59D 3A CF A6 -  	LD		A, (INT_check_line_cumsum)
+ 1068 00:A5A0 FE 27 -  -  	CP		39
+ 1069 00:A5A2 CA 65 A6 -  	JP		Z, LBL_erase_line
+ 1070 00:A5A5 C3 65 A5 -  	JP		LBL_check_line_addy
+ 1071 00:A5A8 -  -  -  -  CAL_add_ligne:
+ 1072 00:A5A8 21 F4 A0 -  	LD		HL, INT_score_10000
+ 1073 00:A5AB 36 00 -  -  	LD		(HL), 0
+ 1074 00:A5AD 21 F5 A0 -  	LD		HL, INT_score_1000
+ 1075 00:A5B0 36 00 -  -  	LD		(HL), 0
+ 1076 00:A5B2 3A 45 A3 -  	LD		A, (INT_exchange_line)
+ 1077 00:A5B5 3C -  -  -  	INC		A
+ 1078 00:A5B6 21 F6 A0 -  	LD		HL, INT_score_100
+ 1079 00:A5B9 77 -  -  -  	LD		(HL), A
+ 1080 00:A5BA 21 F7 A0 -  	LD		HL, INT_score_10
+ 1081 00:A5BD 36 00 -  -  	LD		(HL), 0
+ 1082 00:A5BF 21 F8 A0 -  	LD		HL, INT_score_1
+ 1083 00:A5C2 36 00 -  -  	LD		(HL), 0
+ 1084 00:A5C4 CD FC A0 -  	CALL	CAL_add_score
+ 1085 00:A5C7 3A 7B AB -  	LD		A, (INT_nb_ligne)
+ 1086 00:A5CA 3C -  -  -  	INC		A
+ 1087 00:A5CB 21 7B AB -  	LD		HL, INT_nb_ligne
+ 1088 00:A5CE 77 -  -  -  	LD		(HL), A
+ 1089 00:A5CF FE 0A -  -  	CP		10
+ 1090 00:A5D1 CA D5 A5 -  	JP		Z, LBL_next_level
+ 1091 00:A5D4 C9 -  -  -  	RET
+ 1092 00:A5D5 -  -  -  -  LBL_next_level:
+ 1093 00:A5D5 21 7B AB -  	LD		HL, INT_nb_ligne
+ 1094 00:A5D8 36 00 -  -  	LD		(HL), 0
+ 1095 00:A5DA 3A 87 AB -  	LD		A, (INT_speed_1)
+ 1096 00:A5DD 3D -  -  -  	DEC		A
+ 1097 00:A5DE 21 87 AB -  	LD		HL, INT_speed_1
+ 1098 00:A5E1 77 -  -  -  	LD		(HL), A
+ 1099 00:A5E2 3A 7C AB -  	LD		A, (INT_lvl)
+ 1100 00:A5E5 3C -  -  -  	INC		A
+ 1101 00:A5E6 21 7C AB -  	LD		HL, INT_lvl
+ 1102 00:A5E9 77 -  -  -  	LD		(HL), A
+ 1103 00:A5EA FE 0A -  -  	CP		10
+ 1104 00:A5EC CA 22 A6 -  	JP		Z, LBL_next_level10
+ 1105 00:A5EF 3A 62 A6 -  	LD		A, (INT_lvl2)
+ 1106 00:A5F2 C6 30 -  -  	ADD		A, 48
+ 1107 00:A5F4 21 63 A6 -  	LD		HL, INT_aaap
+ 1108 00:A5F7 77 -  -  -  	LD		(HL), A
+ 1109 00:A5F8 3E 57 -  -  	LD		A, 87
+ 1110 00:A5FA 32 D7 86 -  	LD		(PENCOL), A
+ 1111 00:A5FD 3E 36 -  -  	LD		A, 54
+ 1112 00:A5FF 32 D8 86 -  	LD		(PENROW), A
+ 1113 00:A602 21 63 A6 -  	LD		HL, INT_aaap
+ 1114 00:A605 EF -  -  -  			rst 28h 
+ 1115 00:A606 61 45 -  -  	.dw _vputs)
+ 1116 00:A608 3A 7C AB -  	LD		A, (INT_lvl)
+ 1117 00:A60B C6 30 -  -  	ADD		A, 48
+ 1118 00:A60D 21 63 A6 -  	LD		HL, INT_aaap
+ 1119 00:A610 77 -  -  -  	LD		(HL), A
+ 1120 00:A611 3E 5B -  -  	LD		A, 91
+ 1121 00:A613 32 D7 86 -  	LD		(PENCOL), A
+ 1122 00:A616 3E 36 -  -  	LD		A, 54
+ 1123 00:A618 32 D8 86 -  	LD		(PENROW), A
+ 1124 00:A61B 21 63 A6 -  	LD		HL, INT_aaap
+ 1125 00:A61E EF -  -  -  			rst 28h 
+ 1126 00:A61F 61 45 -  -  	.dw _vputs)
+ 1127 00:A621 C9 -  -  -  	RET
+ 1128 00:A622 -  -  -  -  LBL_next_level10:
+ 1129 00:A622 21 7C AB -  	LD		HL, INT_lvl
+ 1130 00:A625 36 00 -  -  	LD		(HL), 0
+ 1131 00:A627 3A 62 A6 -  	LD		A, (INT_lvl2)
+ 1132 00:A62A 3C -  -  -  	INC		A
+ 1133 00:A62B 21 62 A6 -  	LD		HL, INT_lvl2
+ 1134 00:A62E 77 -  -  -  	LD		(HL), A
+ 1135 00:A62F 3A 62 A6 -  	LD		A, (INT_lvl2)
+ 1136 00:A632 C6 30 -  -  	ADD		A, 48
+ 1137 00:A634 21 63 A6 -  	LD		HL, INT_aaap
+ 1138 00:A637 77 -  -  -  	LD		(HL), A
+ 1139 00:A638 3E 57 -  -  	LD		A, 87
+ 1140 00:A63A 32 D7 86 -  	LD		(PENCOL), A
+ 1141 00:A63D 3E 36 -  -  	LD		A, 54
+ 1142 00:A63F 32 D8 86 -  	LD		(PENROW), A
+ 1143 00:A642 21 63 A6 -  	LD		HL, INT_aaap
+ 1144 00:A645 EF -  -  -  			rst 28h 
+ 1145 00:A646 61 45 -  -  	.dw _vputs)
+ 1146 00:A648 3A 7C AB -  	LD		A, (INT_lvl)
+ 1147 00:A64B C6 30 -  -  	ADD		A, 48
+ 1148 00:A64D 21 63 A6 -  	LD		HL, INT_aaap
+ 1149 00:A650 77 -  -  -  	LD		(HL), A
+ 1150 00:A651 3E 5B -  -  	LD		A, 91
+ 1151 00:A653 32 D7 86 -  	LD		(PENCOL), A
+ 1152 00:A656 3E 36 -  -  	LD		A, 54
+ 1153 00:A658 32 D8 86 -  	LD		(PENROW), A
+ 1154 00:A65B 21 63 A6 -  	LD		HL, INT_aaap
+ 1155 00:A65E EF -  -  -  			rst 28h 
+ 1156 00:A65F 61 45 -  -  	.dw _vputs)
+ 1157 00:A661 C9 -  -  -  	RET
+ 1158 00:A662 -  -  -  -  INT_lvl2:
+ 1159 00:A662 00 -  -  -  	.DB		0
+ 1160 00:A663 -  -  -  -  INT_aaap:
+ 1161 00:A663 00 00 -  -  	.DB		0,0
+ 1162 00:A665 -  -  -  -  LBL_erase_line:
+ 1163 00:A665 CD A8 A5 -  	CALL	CAL_add_ligne
+ 1164 00:A668 21 46 A3 -  	LD		HL, MTX_exchange_line
+ 1165 00:A66B 3A 45 A3 -  	LD		A, (INT_exchange_line)
+ 1166 00:A66E 47 -  -  -  	LD		B, A
+ 1167 00:A66F 0E 00 -  -  	LD		C, 0
+ 1168 00:A671 CD 48 AB -  	CALL	CAL_mtx_4
+ 1169 00:A674 3A 8D AB -  	LD		A, (INT_put_piece_mtx_y)
+ 1170 00:A677 5F -  -  -  	LD		E, A
+ 1171 00:A678 3A 9D AB -  	LD		A, (INT_piece_rely)
+ 1172 00:A67B 83 -  -  -  	ADD		A, E
+ 1173 00:A67C 77 -  -  -  	LD		(HL), A
+ 1174 00:A67D 3A 45 A3 -  	LD		A, (INT_exchange_line)
+ 1175 00:A680 3C -  -  -  	INC		A
+ 1176 00:A681 21 45 A3 -  	LD		HL, INT_exchange_line
+ 1177 00:A684 77 -  -  -  	LD		(HL), A
+ 1178 00:A685 21 CE A6 -  	LD		HL, INT_check_line_x
+ 1179 00:A688 36 01 -  -  	LD		(HL), 1
+ 1180 00:A68A C3 8D A6 -  	JP		LBL_erase_line_2
+ 1181 00:A68D -  -  -  -  LBL_erase_line_2:
+ 1182 00:A68D 21 CC AD -  	LD		HL, MTX_collision
+ 1183 00:A690 3A CE A6 -  	LD		A, (INT_check_line_x)
+ 1184 00:A693 47 -  -  -  	LD		B, A
+ 1185 00:A694 3A 8D AB -  	LD		A, (INT_put_piece_mtx_y)
+ 1186 00:A697 5F -  -  -  	LD		E, A
+ 1187 00:A698 3A 9D AB -  	LD		A, (INT_piece_rely)
+ 1188 00:A69B 83 -  -  -  	ADD		A, E
+ 1189 00:A69C 4F -  -  -   	LD		C, A
+ 1190 00:A69D CD 5F AB -  	CALL	CAL_mtx_13
+ 1191 00:A6A0 36 00 -  -  	LD		(HL), 0
+ 1192 00:A6A2 CD 27 A8 -  	CALL	CAL_update_reset_relxy
+ 1193 00:A6A5 3A CE A6 -  	LD		A, (INT_check_line_x)
+ 1194 00:A6A8 21 8A AB -  	LD		HL, INT_sp_piece_relx
+ 1195 00:A6AB 77 -  -  -  	LD		(HL), A
+ 1196 00:A6AC 3A 8D AB -  	LD		A, (INT_put_piece_mtx_y)
+ 1197 00:A6AF 5F -  -  -  	LD		E, A
+ 1198 00:A6B0 3A 9D AB -  	LD		A, (INT_piece_rely)
+ 1199 00:A6B3 83 -  -  -  	ADD		A, E
+ 1200 00:A6B4 21 8B AB -  	LD		HL, INT_sp_piece_rely
+ 1201 00:A6B7 77 -  -  -  	LD		(HL), A
+ 1202 00:A6B8 CD 73 A8 -  	CALL	CAL_ppiece_off
+ 1203 00:A6BB C3 BE A6 -  	JP		LBL_erase_line_2_addx
+ 1204 00:A6BE -  -  -  -  LBL_erase_line_2_addx:
+ 1205 00:A6BE 3A CE A6 -  	LD		A, (INT_check_line_x)
+ 1206 00:A6C1 3C -  -  -  	INC		A
+ 1207 00:A6C2 21 CE A6 -  	LD		HL, INT_check_line_x
+ 1208 00:A6C5 77 -  -  -  	LD		(HL), A
+ 1209 00:A6C6 FE 0C -  -  	CP		12
+ 1210 00:A6C8 CA 65 A5 -  	JP		Z, LBL_check_line_addy
+ 1211 00:A6CB C3 8D A6 -  	JP		LBL_erase_line_2
+ 1212 00:A6CE -  -  -  -  INT_check_line_x:
+ 1213 00:A6CE 00 -  -  -  	.DB		0
+ 1214 00:A6CF -  -  -  -  INT_check_line_cumsum:
+ 1215 00:A6CF 00 -  -  -  	.DB		0
+ 1216 00:A6D0 -  -  -  -  CAL_checkup_mtx_1:
+ 1217 00:A6D0 21 8C AB -  	LD		HL, INT_put_piece_mtx_x
+ 1218 00:A6D3 36 00 -  -  	LD		(HL), 0
+ 1219 00:A6D5 21 8D AB -  	LD		HL, INT_put_piece_mtx_y
+ 1220 00:A6D8 36 00 -  -  	LD		(HL), 0
+ 1221 00:A6DA C9 -  -  -  	RET
+ 1222 00:A6DB -  -  -  -  CAL_checkup_mtx_2:
+ 1223 00:A6DB CD F4 9F -  	CALL	CAL_getformat
+ 1224 00:A6DE 3A 8C AB -  	LD		A, (INT_put_piece_mtx_x)
+ 1225 00:A6E1 47 -  -  -  	LD		B, A
+ 1226 00:A6E2 3A 8D AB -  	LD		A, (INT_put_piece_mtx_y)
+ 1227 00:A6E5 4F -  -  -   	LD		C, A
+ 1228 00:A6E6 CD 48 AB -  	CALL	CAL_mtx_4
+ 1229 00:A6E9 C9 -  -  -  	RET
+ 1230 00:A6EA -  -  -  -  CAL_checkup_mtx_3:
+ 1231 00:A6EA 21 CC AD -  	LD		HL, MTX_collision
+ 1232 00:A6ED 3A 8C AB -  	LD		A, (INT_put_piece_mtx_x)
+ 1233 00:A6F0 5F -  -  -  	LD		E, A
+ 1234 00:A6F1 3A 9C AB -  	LD		A, (INT_piece_relx)
+ 1235 00:A6F4 83 -  -  -  	ADD		A, E
+ 1236 00:A6F5 47 -  -  -  	LD		B, A
+ 1237 00:A6F6 3A 8D AB -  	LD		A, (INT_put_piece_mtx_y)
+ 1238 00:A6F9 5F -  -  -  	LD		E, A
+ 1239 00:A6FA 3A 9D AB -  	LD		A, (INT_piece_rely)
+ 1240 00:A6FD 83 -  -  -  	ADD		A, E
+ 1241 00:A6FE 4F -  -  -   	LD		C, A
+ 1242 00:A6FF CD 5F AB -  	CALL	CAL_mtx_13
+ 1243 00:A702 C9 -  -  -  	RET
+ 1244 00:A703 -  -  -  -  CAL_checkup_mtx_4:
+ 1245 00:A703 3A 8C AB -  	LD		A, (INT_put_piece_mtx_x)
+ 1246 00:A706 3C -  -  -  	INC		A
+ 1247 00:A707 21 8C AB -  	LD		HL, INT_put_piece_mtx_x
+ 1248 00:A70A 77 -  -  -  	LD		(HL), A
+ 1249 00:A70B FE 04 -  -  	CP		4
+ 1250 00:A70D C9 -  -  -  	RET
+ 1251 00:A70E -  -  -  -  CAL_checkup_mtx_5:
+ 1252 00:A70E 21 8C AB -  	LD		HL, INT_put_piece_mtx_x
+ 1253 00:A711 36 00 -  -  	LD		(HL), 0
+ 1254 00:A713 3A 8D AB -  	LD		A, (INT_put_piece_mtx_y)
+ 1255 00:A716 3C -  -  -  	INC		A
+ 1256 00:A717 21 8D AB -  	LD		HL, INT_put_piece_mtx_y
+ 1257 00:A71A 77 -  -  -  	LD		(HL), A
+ 1258 00:A71B FE 04 -  -  	CP		4
+ 1259 00:A71D C9 -  -  -  	RET
+ 1260 00:A71E -  -  -  -  CAL_update_piece:								; Début Update Piece
+ 1261 00:A71E 21 7F AB -  	LD		HL, INT_anc_or_new
+ 1262 00:A721 36 01 -  -  	LD		(HL), 1
+ 1263 00:A723 CD 67 A2 -  	CALL	CAL_check_for_collision
+ 1264 00:A726 3A 80 AB -  	LD		A, (INT_collision_detecte)
+ 1265 00:A729 FE 01 -  -  	CP		1
+ 1266 00:A72B C8 -  -  -  	RET		Z
+ 1267 00:A72C CD 38 A2 -  	CALL	CAL_put_piece_mtx
+ 1268 00:A72F CD 27 A8 -  	CALL	CAL_update_reset_relxy
+ 1269 00:A732 3A 9C AB -  	LD		A, (INT_piece_relx)
+ 1270 00:A735 21 8A AB -  	LD		HL, INT_sp_piece_relx
+ 1271 00:A738 77 -  -  -  	LD		(HL), A
+ 1272 00:A739 3A 9D AB -  	LD		A, (INT_piece_rely)
+ 1273 00:A73C 21 8B AB -  	LD		HL, INT_sp_piece_rely
+ 1274 00:A73F 77 -  -  -  	LD		(HL), A
+ 1275 00:A740 CD 79 A7 -  	CALL	CAL_update_new_piece
+ 1276 00:A743 CD 27 A8 -  	CALL	CAL_update_reset_relxy
+ 1277 00:A746 3A 9A AB -  	LD		A, (INT_anc_piece_relx)
+ 1278 00:A749 21 8A AB -  	LD		HL, INT_sp_piece_relx
+ 1279 00:A74C 77 -  -  -  	LD		(HL), A
+ 1280 00:A74D 3A 9B AB -  	LD		A, (INT_anc_piece_rely)
+ 1281 00:A750 21 8B AB -  	LD		HL, INT_sp_piece_rely
+ 1282 00:A753 77 -  -  -  	LD		(HL), A
+ 1283 00:A754 21 7F AB -  	LD		HL, INT_anc_or_new
+ 1284 00:A757 36 02 -  -  	LD		(HL), 2
+ 1285 00:A759 CD B5 A7 -  	CALL	CAL_update_anc_piece
+ 1286 00:A75C 3A 9C AB -  	LD		A, (INT_piece_relx)
+ 1287 00:A75F 21 9A AB -  	LD  	HL, INT_anc_piece_relx
+ 1288 00:A762 77 -  -  -  	LD		(HL), A
+ 1289 00:A763 3A 9D AB -  	LD		A, (INT_piece_rely)
+ 1290 00:A766 21 9B AB -  	LD  	HL, INT_anc_piece_rely
+ 1291 00:A769 77 -  -  -  	LD		(HL), A
+ 1292 00:A76A 3A 83 AB -  	LD		A, (INT_format)
+ 1293 00:A76D 21 85 AB -  	LD		HL, INT_anc_format
+ 1294 00:A770 77 -  -  -  	LD		(HL), A
+ 1295 00:A771 3A 84 AB -  	LD		A, (INT_rot)
+ 1296 00:A774 21 86 AB -  	LD		HL, INT_anc_rot
+ 1297 00:A777 77 -  -  -  	LD		(HL), A
+ 1298 00:A778 C9 -  -  -  	RET
+ 1299 00:A779 -  -  -  -  CAL_update_new_piece:
+ 1300 00:A779 C3 7C A7 -  	JP		LBL_update_new_piece	
+ 1301 00:A77C -  -  -  -  LBL_update_new_piece:
+ 1302 00:A77C CD 18 A8 -  	CALL	CAL_update_mtx_format
+ 1303 00:A77F FE 01 -  -  	CP		1
+ 1304 00:A781 CA 87 A7 -  	JP		Z, LBL_update_new_piece_2
+ 1305 00:A784 C3 92 A7 -  	JP		LBL_update_new_piece_addx
+ 1306 00:A787 -  -  -  -  LBL_update_new_piece_2:
+ 1307 00:A787 CD FF A7 -  	CALL	CAL_update_mtx_collision
+ 1308 00:A78A FE 01 -  -  	CP		1
+ 1309 00:A78C CC 61 A8 -  	CALL	Z, CAL_ppiece_on
+ 1310 00:A78F C3 92 A7 -  	JP		LBL_update_new_piece_addx
+ 1311 00:A792 -  -  -  -  LBL_update_new_piece_addx:
+ 1312 00:A792 3A 96 AB -  	LD		A, (INT_ppiece_relx)
+ 1313 00:A795 3C -  -  -  	INC		A
+ 1314 00:A796 21 96 AB -  	LD		HL, INT_ppiece_relx
+ 1315 00:A799 77 -  -  -  	LD		(HL), A
+ 1316 00:A79A FE 04 -  -  	CP		4
+ 1317 00:A79C CA A2 A7 -  	JP		Z, LBL_update_new_piece_addy
+ 1318 00:A79F C3 7C A7 -  	JP		LBL_update_new_piece
+ 1319 00:A7A2 -  -  -  -  LBL_update_new_piece_addy:
+ 1320 00:A7A2 21 96 AB -  	LD		HL, INT_ppiece_relx
+ 1321 00:A7A5 36 00 -  -  	LD		(HL), 0
+ 1322 00:A7A7 3A 97 AB -  	LD		A, (INT_ppiece_rely)
+ 1323 00:A7AA 3C -  -  -  	INC		A
+ 1324 00:A7AB 21 97 AB -  	LD		HL, INT_ppiece_rely
+ 1325 00:A7AE 77 -  -  -  	LD		(HL), A
+ 1326 00:A7AF FE 04 -  -  	CP		4
+ 1327 00:A7B1 C8 -  -  -  	RET		Z
+ 1328 00:A7B2 C3 7C A7 -  	JP		LBL_update_new_piece
+ 1329 00:A7B5 -  -  -  -  CAL_update_anc_piece:
+ 1330 00:A7B5 C3 B8 A7 -  	JP		LBL_update_anc_piece
+ 1331 00:A7B8 -  -  -  -  LBL_update_anc_piece:
+ 1332 00:A7B8 CD 18 A8 -  	CALL	CAL_update_mtx_format
+ 1333 00:A7BB FE 01 -  -  	CP		1
+ 1334 00:A7BD CA C3 A7 -  	JP		Z, LBL_update_anc_piece_2
+ 1335 00:A7C0 C3 DC A7 -  	JP		LBL_update_anc_piece_addx
+ 1336 00:A7C3 -  -  -  -  LBL_update_anc_piece_2:
+ 1337 00:A7C3 CD FF A7 -  	CALL	CAL_update_mtx_collision
+ 1338 00:A7C6 FE 01 -  -  	CP		1
+ 1339 00:A7C8 CC D3 A7 -  	CALL	Z, CAL_anc_ppiece_off_1
+ 1340 00:A7CB FE 02 -  -  	CP		2
+ 1341 00:A7CD CC D9 A7 -  	CALL	Z, CAL_anc_ppiece_off_2
+ 1342 00:A7D0 C3 DC A7 -  	JP		LBL_update_anc_piece_addx
+ 1343 00:A7D3 -  -  -  -  CAL_anc_ppiece_off_1:
+ 1344 00:A7D3 36 00 -  -  	LD		(HL), 0
+ 1345 00:A7D5 CD 73 A8 -  	CALL	CAL_ppiece_off
+ 1346 00:A7D8 C9 -  -  -  	RET
+ 1347 00:A7D9 -  -  -  -  CAL_anc_ppiece_off_2:
+ 1348 00:A7D9 36 01 -  -  	LD		(HL), 1
+ 1349 00:A7DB C9 -  -  -  	RET
+ 1350 00:A7DC -  -  -  -  LBL_update_anc_piece_addx:
+ 1351 00:A7DC 3A 96 AB -  	LD		A, (INT_ppiece_relx)
+ 1352 00:A7DF 3C -  -  -  	INC		A
+ 1353 00:A7E0 21 96 AB -  	LD		HL, INT_ppiece_relx
+ 1354 00:A7E3 77 -  -  -  	LD		(HL), A
+ 1355 00:A7E4 FE 04 -  -  	CP		4
+ 1356 00:A7E6 CA EC A7 -  	JP		Z, LBL_update_anc_piece_addy
+ 1357 00:A7E9 C3 B8 A7 -  	JP		LBL_update_anc_piece
+ 1358 00:A7EC -  -  -  -  LBL_update_anc_piece_addy:
+ 1359 00:A7EC 21 96 AB -  	LD		HL, INT_ppiece_relx
+ 1360 00:A7EF 36 00 -  -  	LD		(HL), 0
+ 1361 00:A7F1 3A 97 AB -  	LD		A, (INT_ppiece_rely)
+ 1362 00:A7F4 3C -  -  -  	INC		A
+ 1363 00:A7F5 21 97 AB -  	LD		HL, INT_ppiece_rely
+ 1364 00:A7F8 77 -  -  -  	LD		(HL), A
+ 1365 00:A7F9 FE 04 -  -  	CP		4
+ 1366 00:A7FB C8 -  -  -  	RET		Z
+ 1367 00:A7FC C3 B8 A7 -  	JP		LBL_update_anc_piece
+ 1368 00:A7FF -  -  -  -  CAL_update_mtx_collision:
+ 1369 00:A7FF 21 CC AD -  	LD		HL, MTX_collision
+ 1370 00:A802 3A 96 AB -  	LD		A, (INT_ppiece_relx)
+ 1371 00:A805 5F -  -  -  	LD		E, A
+ 1372 00:A806 3A 8A AB -  	LD		A, (INT_sp_piece_relx)
+ 1373 00:A809 83 -  -  -  	ADD		A, E
+ 1374 00:A80A 47 -  -  -  	LD		B, A
+ 1375 00:A80B 3A 97 AB -  	LD		A, (INT_ppiece_rely)
+ 1376 00:A80E 5F -  -  -  	LD		E, A
+ 1377 00:A80F 3A 8B AB -  	LD		A, (INT_sp_piece_rely)
+ 1378 00:A812 83 -  -  -  	ADD		A, E
+ 1379 00:A813 4F -  -  -   	LD		C, A
+ 1380 00:A814 CD 5F AB -   	CALL	CAL_mtx_13
+ 1381 00:A817 C9 -  -  -   	RET
+ 1382 00:A818 -  -  -  -  CAL_update_mtx_format:
+ 1383 00:A818 CD F4 9F -  	CALL	CAL_getformat
+ 1384 00:A81B 3A 96 AB -  	LD		A, (INT_ppiece_relx)
+ 1385 00:A81E 47 -  -  -  	LD		B, A
+ 1386 00:A81F 3A 97 AB -  	LD		A, (INT_ppiece_rely)
+ 1387 00:A822 4F -  -  -   	LD		C, A
+ 1388 00:A823 CD 48 AB -  	CALL	CAL_mtx_4
+ 1389 00:A826 C9 -  -  -  	RET
+ 1390 00:A827 -  -  -  -  CAL_update_reset_relxy:
+ 1391 00:A827 21 96 AB -  	LD  	HL, INT_ppiece_relx
+ 1392 00:A82A 36 00 -  -  	LD		(HL), 0
+ 1393 00:A82C 21 97 AB -  	LD  	HL, INT_ppiece_rely
+ 1394 00:A82F 36 00 -  -  	LD		(HL), 0
+ 1395 00:A831 C9 -  -  -  	RET											; Fin Update Piece
+ 1396 00:A832 -  -  -  -  CAL_getskin:
+ 1397 00:A832 3A 8E AB -  	LD		A, (INT_ppiece_on)
+ 1398 00:A835 FE 00 -  -  	CP		0
+ 1399 00:A837 CA 28 AB -  	JP		Z, LBL_ppiece_skin_0
+ 1400 00:A83A 3A 82 AB -  	LD		A, (INT_piece_skin)
+ 1401 00:A83D FE 01 -  -  	CP		1
+ 1402 00:A83F CA 2C AB -  	JP		Z, LBL_ppiece_skin_1
+ 1403 00:A842 FE 02 -  -  	CP		2
+ 1404 00:A844 CA 30 AB -  	JP		Z, LBL_ppiece_skin_2
+ 1405 00:A847 FE 03 -  -  	CP		3
+ 1406 00:A849 CA 34 AB -  	JP		Z, LBL_ppiece_skin_3
+ 1407 00:A84C FE 04 -  -  	CP		4
+ 1408 00:A84E CA 38 AB -  	JP		Z, LBL_ppiece_skin_4
+ 1409 00:A851 FE 05 -  -  	CP		5
+ 1410 00:A853 CA 3C AB -  	JP		Z, LBL_ppiece_skin_5
+ 1411 00:A856 FE 06 -  -  	CP		6
+ 1412 00:A858 CA 40 AB -  	JP		Z, LBL_ppiece_skin_6
+ 1413 00:A85B FE 07 -  -  	CP		7
+ 1414 00:A85D CA 44 AB -  	JP		Z, LBL_ppiece_skin_7
+ 1415 00:A860 C9 -  -  -  	RET
+ 1416 00:A861 -  -  -  -  CAL_ppiece_on:									; Début Affiche une ppiece
+ 1417 00:A861 21 8E AB -  	LD		HL, INT_ppiece_on
+ 1418 00:A864 36 01 -  -  	LD		(HL), 1
+ 1419 00:A866 21 94 AB -  	LD		HL, INT_ppiece_x
+ 1420 00:A869 36 00 -  -  	LD		(HL), 0
+ 1421 00:A86B 21 95 AB -  	LD		HL, INT_ppiece_y
+ 1422 00:A86E 36 00 -  -   	LD		(HL), 0
+ 1423 00:A870 C3 85 A8 -  	JP		LBL_ppiece_on
+ 1424 00:A873 -  -  -  -  CAL_ppiece_off:
+ 1425 00:A873 21 8E AB -  	LD		HL, INT_ppiece_on
+ 1426 00:A876 36 00 -  -  	LD		(HL), 0
+ 1427 00:A878 21 94 AB -  	LD		HL, INT_ppiece_x
+ 1428 00:A87B 36 00 -  -  	LD		(HL), 0
+ 1429 00:A87D 21 95 AB -  	LD		HL, INT_ppiece_y
+ 1430 00:A880 36 00 -  -   	LD		(HL), 0
+ 1431 00:A882 C3 85 A8 -  	JP		LBL_ppiece_on
+ 1432 00:A885 -  -  -  -  LBL_ppiece_on:
+ 1433 00:A885 CD 32 A8 -  	CALL	CAL_getskin
+ 1434 00:A888 3A 94 AB -  	LD		A, (INT_ppiece_x)
+ 1435 00:A88B 47 -  -  -  	LD		B, A
+ 1436 00:A88C 3A 95 AB -  	LD		A, (INT_ppiece_y)
+ 1437 00:A88F 4F -  -  -   	LD		C, A
+ 1438 00:A890 CD 48 AB -  	CALL	CAL_mtx_4
+ 1439 00:A893 FE 01 -  -  	CP		1
+ 1440 00:A895 CC 9B A8 -  	CALL	Z, CAL_ppiece_on_2
+ 1441 00:A898 C3 A6 A8 -  	JP		LBL_ppiece_addx
+ 1442 00:A89B -  -  -  -  CAL_ppiece_on_2:
+ 1443 00:A89B CD C9 A8 -  	CALL	CAL_ppiece_get_absxy
+ 1444 00:A89E 3A 8E AB -  	LD		A, (INT_ppiece_on)
+ 1445 00:A8A1 57 -  -  -  	LD		D, A
+ 1446 00:A8A2 EF -  -  -  			rst 28h 
+ 1447 00:A8A3 E3 47 -  -  	.dw _IPoint)
+ 1448 00:A8A5 C9 -  -  -  	RET
+ 1449 00:A8A6 -  -  -  -  LBL_ppiece_addx:
+ 1450 00:A8A6 3A 94 AB -  	LD		A, (INT_ppiece_x)
+ 1451 00:A8A9 3C -  -  -  	INC		A
+ 1452 00:A8AA 21 94 AB -  	LD		HL, INT_ppiece_x
+ 1453 00:A8AD 77 -  -  -  	LD		(HL), A
+ 1454 00:A8AE FE 04 -  -  	CP		4
+ 1455 00:A8B0 CA B6 A8 -  	JP		Z, LBL_ppiece_addy
+ 1456 00:A8B3 C3 85 A8 -  	JP		LBL_ppiece_on
+ 1457 00:A8B6 -  -  -  -  LBL_ppiece_addy:
+ 1458 00:A8B6 21 94 AB -  	LD		HL, INT_ppiece_x
+ 1459 00:A8B9 36 00 -  -  	LD		(HL), 0
+ 1460 00:A8BB 3A 95 AB -  	LD		A, (INT_ppiece_y)
+ 1461 00:A8BE 3C -  -  -  	INC		A
+ 1462 00:A8BF 21 95 AB -  	LD		HL, INT_ppiece_y
+ 1463 00:A8C2 77 -  -  -  	LD		(HL), A
+ 1464 00:A8C3 FE 04 -  -  	CP		4
+ 1465 00:A8C5 C8 -  -  -  	RET		Z
+ 1466 00:A8C6 C3 85 A8 -  	JP		LBL_ppiece_on
+ 1467 00:A8C9 -  -  -  -  CAL_ppiece_get_absxy:
+ 1468 00:A8C9 3A 96 AB -  	LD		A, (INT_ppiece_relx)
+ 1469 00:A8CC 5F -  -  -  	LD		E, A
+ 1470 00:A8CD 3A 8A AB -  	LD		A, (INT_sp_piece_relx)
+ 1471 00:A8D0 83 -  -  -  	ADD		A, E
+ 1472 00:A8D1 87 -  -  -  	ADD		A, A
+ 1473 00:A8D2 87 -  -  -  	ADD		A, A
+ 1474 00:A8D3 C6 06 -  -  	ADD		A, 6
+ 1475 00:A8D5 5F -  -  -  	LD		E, A
+ 1476 00:A8D6 3A 94 AB -  	LD		A, (INT_ppiece_x)
+ 1477 00:A8D9 83 -  -  -  	ADD		A, E
+ 1478 00:A8DA 47 -  -  -  	LD		B, A
+ 1479 00:A8DB 3A 97 AB -  	LD		A, (INT_ppiece_rely)
+ 1480 00:A8DE 5F -  -  -  	LD		E, A
+ 1481 00:A8DF 3A 8B AB -  	LD		A, (INT_sp_piece_rely)
+ 1482 00:A8E2 83 -  -  -  	ADD		A, E
+ 1483 00:A8E3 87 -  -  -  	ADD		A, A
+ 1484 00:A8E4 87 -  -  -  	ADD		A, A
+ 1485 00:A8E5 5F -  -  -  	LD		E, A
+ 1486 00:A8E6 3A 95 AB -  	LD		A, (INT_ppiece_y)
+ 1487 00:A8E9 83 -  -  -  	ADD		A, E
+ 1488 00:A8EA 4F -  -  -  	LD		C, A
+ 1489 00:A8EB C9 -  -  -      RET											; Fin Affiche une ppiece
+ 1490 00:A8EC -  -  -  -  CAL_draw_arena:
+ 1491 00:A8EC 06 09 -  -  	LD		B, 9
+ 1492 00:A8EE 0E 02 -  -  	LD		C, 2
+ 1493 00:A8F0 16 09 -  -  	LD		D, 9
+ 1494 00:A8F2 1E 3F -  -  	LD		E, 63
+ 1495 00:A8F4 26 01 -  -  	LD		H, 1
+ 1496 00:A8F6 EF -  -  -  			rst 28h 
+ 1497 00:A8F7 E0 47 -  -  	.dw _iline)
+ 1498 00:A8F9 06 07 -  -  	LD		B, 7
+ 1499 00:A8FB 0E 02 -  -  	LD		C, 2
+ 1500 00:A8FD 16 07 -  -  	LD		D, 7
+ 1501 00:A8FF 1E 3F -  -  	LD		E, 63
+ 1502 00:A901 26 01 -  -  	LD		H, 1
+ 1503 00:A903 EF -  -  -  			rst 28h 
+ 1504 00:A904 E0 47 -  -  	.dw _iline)
+ 1505 00:A906 06 36 -  -  	LD		B, 54
+ 1506 00:A908 0E 02 -  -  	LD		C, 2
+ 1507 00:A90A 16 36 -  -  	LD		D, 54
+ 1508 00:A90C 1E 3F -  -  	LD		E, 63
+ 1509 00:A90E 26 01 -  -  	LD		H, 1
+ 1510 00:A910 EF -  -  -  			rst 28h 
+ 1511 00:A911 E0 47 -  -  	.dw _iline)
+ 1512 00:A913 06 38 -  -  	LD		B, 56
+ 1513 00:A915 0E 02 -  -  	LD		C, 2
+ 1514 00:A917 16 38 -  -  	LD		D, 56
+ 1515 00:A919 1E 3F -  -  	LD		E, 63
+ 1516 00:A91B 26 01 -  -  	LD		H, 1
+ 1517 00:A91D EF -  -  -  			rst 28h 
+ 1518 00:A91E E0 47 -  -  	.dw _iline)
+ 1519 00:A920 06 08 -  -  	LD		B, 8
+ 1520 00:A922 0E 03 -  -  	LD		C, 3
+ 1521 00:A924 16 37 -  -  	LD		D, 55
+ 1522 00:A926 1E 03 -  -  	LD		E, 3
+ 1523 00:A928 26 01 -  -  	LD		H, 1
+ 1524 00:A92A EF -  -  -  			rst 28h 
+ 1525 00:A92B E0 47 -  -  	.dw _iline)
+ 1526 00:A92D 06 08 -  -  	LD		B, 8
+ 1527 00:A92F 0E 02 -  -  	LD		C, 2
+ 1528 00:A931 16 37 -  -  	LD		D, 55
+ 1529 00:A933 1E 02 -  -  	LD		E, 2
+ 1530 00:A935 26 01 -  -  	LD		H, 1
+ 1531 00:A937 EF -  -  -  			rst 28h 
+ 1532 00:A938 E0 47 -  -  	.dw _iline)
+ 1533 00:A93A 06 4D -  -  	LD		B, 77
+ 1534 00:A93C 0E 1B -  -  	LD		C, 27
+ 1535 00:A93E 16 4D -  -  	LD		D, 77
+ 1536 00:A940 1E 2C -  -  	LD		E, 44
+ 1537 00:A942 26 01 -  -  	LD		H, 1
+ 1538 00:A944 EF -  -  -  			rst 28h 
+ 1539 00:A945 E0 47 -  -  	.dw _iline)
+ 1540 00:A947 06 5E -  -  	LD		B, 94
+ 1541 00:A949 0E 1B -  -  	LD		C, 27
+ 1542 00:A94B 16 5E -  -  	LD		D, 94
+ 1543 00:A94D 1E 2C -  -  	LD		E, 44
+ 1544 00:A94F 26 01 -  -  	LD		H, 1
+ 1545 00:A951 EF -  -  -  			rst 28h 
+ 1546 00:A952 E0 47 -  -  	.dw _iline)
+ 1547 00:A954 06 4D -  -  	LD		B, 77
+ 1548 00:A956 0E 1B -  -  	LD		C, 27
+ 1549 00:A958 16 5E -  -  	LD		D, 94
+ 1550 00:A95A 1E 1B -  -  	LD		E, 27
+ 1551 00:A95C 26 01 -  -  	LD		H, 1
+ 1552 00:A95E EF -  -  -  			rst 28h 
+ 1553 00:A95F E0 47 -  -  	.dw _iline)
+ 1554 00:A961 06 4D -  -  	LD		B, 77
+ 1555 00:A963 0E 2C -  -  	LD		C, 44
+ 1556 00:A965 16 5E -  -  	LD		D, 94
+ 1557 00:A967 1E 2C -  -  	LD		E, 44
+ 1558 00:A969 26 01 -  -  	LD		H, 1
+ 1559 00:A96B EF -  -  -  			rst 28h 
+ 1560 00:A96C E0 47 -  -  	.dw _iline)
+ 1561 00:A96E 3E 3A -  -      LD		A, 58
+ 1562 00:A970 32 D7 86 -  	LD		(PENCOL), A
+ 1563 00:A973 3E 01 -  -  	LD		A, 1
+ 1564 00:A975 32 D8 86 -  	LD		(PENROW), A
+ 1565 00:A978 21 3F AA -  	LD		HL, MSG_tetris_title
+ 1566 00:A97B EF -  -  -  			rst 28h 
+ 1567 00:A97C 61 45 -  -  	.dw _vputs)
+ 1568 00:A97E 3E 51 -  -  	LD		A, 81
+ 1569 00:A980 32 D7 86 -  	LD		(PENCOL), A
+ 1570 00:A983 3E 08 -  -  	LD		A, 8
+ 1571 00:A985 32 D8 86 -  	LD		(PENROW), A
+ 1572 00:A988 21 4A AA -  	LD		HL, MSG_tetris_ver
+ 1573 00:A98B EF -  -  -  			rst 28h 
+ 1574 00:A98C 61 45 -  -  	.dw _vputs)
+ 1575 00:A98E 3E 3A -  -  	LD		A, 58
+ 1576 00:A990 32 D7 86 -  	LD		(PENCOL), A
+ 1577 00:A993 3E 0F -  -  	LD		A, 15
+ 1578 00:A995 32 D8 86 -  	LD		(PENROW), A
+ 1579 00:A998 21 4F AA -  	LD		HL, MSG_next
+ 1580 00:A99B EF -  -  -  			rst 28h 
+ 1581 00:A99C 61 45 -  -  	.dw _vputs)
+ 1582 00:A99E 3E 3A -  -  	LD		A, 58
+ 1583 00:A9A0 32 D7 86 -  	LD		(PENCOL), A
+ 1584 00:A9A3 3E 26 -  -  	LD		A, 38
+ 1585 00:A9A5 32 D8 86 -  	LD		(PENROW), A
+ 1586 00:A9A8 21 5C AA -  	LD		HL, MSG_score
+ 1587 00:A9AB EF -  -  -  			rst 28h 
+ 1588 00:A9AC 61 45 -  -  	.dw _vputs)
+ 1589 00:A9AE 3E 3E -  -  	LD		A, 62
+ 1590 00:A9B0 32 D7 86 -  	LD		(PENCOL), A
+ 1591 00:A9B3 3E 2D -  -  	LD		A, 45
+ 1592 00:A9B5 32 D8 86 -  	LD		(PENROW), A
+ 1593 00:A9B8 21 67 AA -  	LD		HL, MSG_score_pts
+ 1594 00:A9BB EF -  -  -  			rst 28h 
+ 1595 00:A9BC 61 45 -  -  	.dw _vputs)
+ 1596 00:A9BE 3E 3A -  -  	LD		A, 58
+ 1597 00:A9C0 32 D7 86 -  	LD		(PENCOL), A
+ 1598 00:A9C3 3E 36 -  -  	LD		A, 54
+ 1599 00:A9C5 32 D8 86 -  	LD		(PENROW), A
+ 1600 00:A9C8 21 54 AA -  	LD		HL, MSG_level
+ 1601 00:A9CB EF -  -  -  			rst 28h 
+ 1602 00:A9CC 61 45 -  -  	.dw _vputs)
+ 1603 00:A9CE 3E 57 -  -  	LD		A, 87
+ 1604 00:A9D0 32 D7 86 -  	LD		(PENCOL), A
+ 1605 00:A9D3 3E 36 -  -  	LD		A, 54
+ 1606 00:A9D5 32 D8 86 -  	LD		(PENROW), A
+ 1607 00:A9D8 21 64 AA -  	LD		HL, MSG_level_pts
+ 1608 00:A9DB EF -  -  -  			rst 28h 
+ 1609 00:A9DC 61 45 -  -  	.dw _vputs)
+ 1610 00:A9DE 3E 02 -  -  	LD		A, 2
+ 1611 00:A9E0 32 D7 86 -  	LD		(PENCOL), A
+ 1612 00:A9E3 3E 02 -  -  	LD		A, 2
+ 1613 00:A9E5 32 D8 86 -  	LD		(PENROW), A
+ 1614 00:A9E8 21 71 AA -  	LD		HL, MSG_A
+ 1615 00:A9EB EF -  -  -  			rst 28h 
+ 1616 00:A9EC 61 45 -  -  	.dw _vputs)
+ 1617 00:A9EE 3E 02 -  -  	LD		A, 2
+ 1618 00:A9F0 32 D7 86 -  	LD		(PENCOL), A
+ 1619 00:A9F3 3E 0C -  -  	LD		A, 12
+ 1620 00:A9F5 32 D8 86 -  	LD		(PENROW), A
+ 1621 00:A9F8 21 73 AA -  	LD		HL, MSG_T
+ 1622 00:A9FB EF -  -  -  			rst 28h 
+ 1623 00:A9FC 61 45 -  -  	.dw _vputs)
+ 1624 00:A9FE 3E 02 -  -  	LD		A, 2
+ 1625 00:AA00 32 D7 86 -  	LD		(PENCOL), A
+ 1626 00:AA03 3E 16 -  -  	LD		A, 22
+ 1627 00:AA05 32 D8 86 -  	LD		(PENROW), A
+ 1628 00:AA08 21 75 AA -  	LD		HL, MSG_E
+ 1629 00:AA0B EF -  -  -  			rst 28h 
+ 1630 00:AA0C 61 45 -  -  	.dw _vputs)
+ 1631 00:AA0E 3E 02 -  -  	LD		A, 2
+ 1632 00:AA10 32 D7 86 -  	LD		(PENCOL), A
+ 1633 00:AA13 3E 20 -  -  	LD		A, 32
+ 1634 00:AA15 32 D8 86 -  	LD		(PENROW), A
+ 1635 00:AA18 21 77 AA -  	LD		HL, MSG_M
+ 1636 00:AA1B EF -  -  -  			rst 28h 
+ 1637 00:AA1C 61 45 -  -  	.dw _vputs)
+ 1638 00:AA1E 3E 02 -  -  	LD		A, 2
+ 1639 00:AA20 32 D7 86 -  	LD		(PENCOL), A
+ 1640 00:AA23 3E 2A -  -  	LD		A, 42
+ 1641 00:AA25 32 D8 86 -  	LD		(PENROW), A
+ 1642 00:AA28 21 79 AA -  	LD		HL, MSG_I
+ 1643 00:AA2B EF -  -  -  			rst 28h 
+ 1644 00:AA2C 61 45 -  -  	.dw _vputs)
+ 1645 00:AA2E 3E 02 -  -  	LD		A, 2
+ 1646 00:AA30 32 D7 86 -  	LD		(PENCOL), A
+ 1647 00:AA33 3E 34 -  -  	LD		A, 52
+ 1648 00:AA35 32 D8 86 -  	LD		(PENROW), A
+ 1649 00:AA38 21 7B AA -  	LD		HL, MSG_S
+ 1650 00:AA3B EF -  -  -  			rst 28h 
+ 1651 00:AA3C 61 45 -  -  	.dw _vputs)
+ 1652 00:AA3E C9 -  -  -  	RET
+ 1653 00:AA3F -  -  -  -  MSG_tetris_title:
+ 1654 00:AA3F 54 45 54 52 
+              49 53 20 20 
+              6A 64 00 -      .DB "TETRIS  jd",0
+ 1655 00:AA4A -  -  -  -  MSG_tetris_ver:
+ 1656 00:AA4A 76 31 2E 31 
+              00 -  -  -      .DB "v1.1",0
+ 1657 00:AA4F -  -  -  -  MSG_next:
+ 1658 00:AA4F 4E 65 78 74 
+              00 -  -  -      .DB "Next",0
+ 1659 00:AA54 -  -  -  -  MSG_level:
+ 1660 00:AA54 4C 65 76 65 
+              6C 20 3A 00     .DB "Level :",0
+ 1661 00:AA5C -  -  -  -  MSG_score:
+ 1662 00:AA5C 53 63 6F 72 
+              65 20 3A 00     .DB "Score :",0
+ 1663 00:AA64 -  -  -  -  MSG_level_pts:
+ 1664 00:AA64 30 30 00 -      .DB "00",0
+ 1665 00:AA67 -  -  -  -  MSG_score_pts:
+ 1666 00:AA67 30 30 30 30 
+              30 30 30 30 
+              30 00 -  -      .DB "000000000",0
+ 1667 00:AA71 -  -  -  -  MSG_A:
+ 1668 00:AA71 41 00 -  -      .DB "A",0
+ 1669 00:AA73 -  -  -  -  MSG_T:
+ 1670 00:AA73 54 00 -  -      .DB "T",0
+ 1671 00:AA75 -  -  -  -  MSG_E:
+ 1672 00:AA75 45 00 -  -      .DB "E",0
+ 1673 00:AA77 -  -  -  -  MSG_M:
+ 1674 00:AA77 4D 00 -  -      .DB "M",0
+ 1675 00:AA79 -  -  -  -  MSG_I:
+ 1676 00:AA79 49 00 -  -      .DB "I",0
+ 1677 00:AA7B -  -  -  -  MSG_S:
+ 1678 00:AA7B 53 00 -  -      .DB "S",0
+ 1679 00:AA7D -  -  -  -  LBL_draw_piece_1_0:
+ 1680 00:AA7D 21 82 AB -  	LD		HL, INT_piece_skin
+ 1681 00:AA80 36 01 -  -  	LD		(HL), 1
+ 1682 00:AA82 21 9C AC -  	LD		HL, MTX_piece_format_1_0
+ 1683 00:AA85 C9 -  -  -  	RET
+ 1684 00:AA86 -  -  -  -  LBL_draw_piece_2_0:
+ 1685 00:AA86 21 82 AB -  	LD		HL, INT_piece_skin
+ 1686 00:AA89 36 02 -  -  	LD		(HL), 2
+ 1687 00:AA8B 21 AC AC -  	LD		HL, MTX_piece_format_2_0
+ 1688 00:AA8E C9 -  -  -  	RET
+ 1689 00:AA8F -  -  -  -  LBL_draw_piece_2_1:
+ 1690 00:AA8F 21 82 AB -  	LD		HL, INT_piece_skin
+ 1691 00:AA92 36 02 -  -  	LD		(HL), 2
+ 1692 00:AA94 21 BC AC -  	LD		HL, MTX_piece_format_2_1
+ 1693 00:AA97 C9 -  -  -  	RET
+ 1694 00:AA98 -  -  -  -  LBL_draw_piece_2_2:
+ 1695 00:AA98 21 82 AB -  	LD		HL, INT_piece_skin
+ 1696 00:AA9B 36 02 -  -  	LD		(HL), 2
+ 1697 00:AA9D 21 CC AC -  	LD		HL, MTX_piece_format_2_2
+ 1698 00:AAA0 C9 -  -  -  	RET
+ 1699 00:AAA1 -  -  -  -  LBL_draw_piece_2_3:
+ 1700 00:AAA1 21 82 AB -  	LD		HL, INT_piece_skin
+ 1701 00:AAA4 36 02 -  -  	LD		(HL), 2
+ 1702 00:AAA6 21 DC AC -  	LD		HL, MTX_piece_format_2_3
+ 1703 00:AAA9 C9 -  -  -  	RET
+ 1704 00:AAAA -  -  -  -  LBL_draw_piece_3_0:
+ 1705 00:AAAA 21 82 AB -  	LD		HL, INT_piece_skin
+ 1706 00:AAAD 36 03 -  -  	LD		(HL), 3
+ 1707 00:AAAF 21 EC AC -  	LD		HL, MTX_piece_format_3_0
+ 1708 00:AAB2 C9 -  -  -  	RET
+ 1709 00:AAB3 -  -  -  -  LBL_draw_piece_3_1:
+ 1710 00:AAB3 21 82 AB -  	LD		HL, INT_piece_skin
+ 1711 00:AAB6 36 03 -  -  	LD		(HL), 3
+ 1712 00:AAB8 21 FC AC -  	LD		HL, MTX_piece_format_3_1
+ 1713 00:AABB C9 -  -  -  	RET
+ 1714 00:AABC -  -  -  -  LBL_draw_piece_4_0:
+ 1715 00:AABC 21 82 AB -  	LD		HL, INT_piece_skin
+ 1716 00:AABF 36 04 -  -  	LD		(HL), 4
+ 1717 00:AAC1 21 0C AD -  	LD		HL, MTX_piece_format_4_0
+ 1718 00:AAC4 C9 -  -  -  	RET
+ 1719 00:AAC5 -  -  -  -  LBL_draw_piece_4_1:
+ 1720 00:AAC5 21 82 AB -  	LD		HL, INT_piece_skin
+ 1721 00:AAC8 36 04 -  -  	LD		(HL), 4
+ 1722 00:AACA 21 1C AD -  	LD		HL, MTX_piece_format_4_1
+ 1723 00:AACD C9 -  -  -  	RET
+ 1724 00:AACE -  -  -  -  LBL_draw_piece_5_0:
+ 1725 00:AACE 21 82 AB -  	LD		HL, INT_piece_skin
+ 1726 00:AAD1 36 05 -  -  	LD		(HL), 5
+ 1727 00:AAD3 21 2C AD -  	LD		HL, MTX_piece_format_5_0
+ 1728 00:AAD6 C9 -  -  -  	RET
+ 1729 00:AAD7 -  -  -  -  LBL_draw_piece_5_1:
+ 1730 00:AAD7 21 82 AB -  	LD		HL, INT_piece_skin
+ 1731 00:AADA 36 05 -  -  	LD		(HL), 5
+ 1732 00:AADC 21 3C AD -  	LD		HL, MTX_piece_format_5_1
+ 1733 00:AADF C9 -  -  -  	RET
+ 1734 00:AAE0 -  -  -  -  LBL_draw_piece_6_0:
+ 1735 00:AAE0 21 82 AB -  	LD		HL, INT_piece_skin
+ 1736 00:AAE3 36 06 -  -  	LD		(HL), 6
+ 1737 00:AAE5 21 4C AD -  	LD		HL, MTX_piece_format_6_0
+ 1738 00:AAE8 C9 -  -  -  	RET
+ 1739 00:AAE9 -  -  -  -  LBL_draw_piece_6_1:
+ 1740 00:AAE9 21 82 AB -  	LD		HL, INT_piece_skin
+ 1741 00:AAEC 36 06 -  -  	LD		(HL), 6
+ 1742 00:AAEE 21 5C AD -  	LD		HL, MTX_piece_format_6_1
+ 1743 00:AAF1 C9 -  -  -  	RET
+ 1744 00:AAF2 -  -  -  -  LBL_draw_piece_6_2:
+ 1745 00:AAF2 21 82 AB -  	LD		HL, INT_piece_skin
+ 1746 00:AAF5 36 06 -  -  	LD		(HL), 6
+ 1747 00:AAF7 21 6C AD -  	LD		HL, MTX_piece_format_6_2
+ 1748 00:AAFA C9 -  -  -  	RET
+ 1749 00:AAFB -  -  -  -  LBL_draw_piece_6_3:
+ 1750 00:AAFB 21 82 AB -  	LD		HL, INT_piece_skin
+ 1751 00:AAFE 36 06 -  -  	LD		(HL), 6
+ 1752 00:AB00 21 7C AD -  	LD		HL, MTX_piece_format_6_3
+ 1753 00:AB03 C9 -  -  -  	RET
+ 1754 00:AB04 -  -  -  -  LBL_draw_piece_7_0:
+ 1755 00:AB04 21 82 AB -  	LD		HL, INT_piece_skin
+ 1756 00:AB07 36 07 -  -  	LD		(HL), 7
+ 1757 00:AB09 21 8C AD -  	LD		HL, MTX_piece_format_7_0
+ 1758 00:AB0C C9 -  -  -  	RET
+ 1759 00:AB0D -  -  -  -  LBL_draw_piece_7_1:
+ 1760 00:AB0D 21 82 AB -  	LD		HL, INT_piece_skin
+ 1761 00:AB10 36 07 -  -  	LD		(HL), 7
+ 1762 00:AB12 21 9C AD -  	LD		HL, MTX_piece_format_7_1
+ 1763 00:AB15 C9 -  -  -  	RET
+ 1764 00:AB16 -  -  -  -  LBL_draw_piece_7_2:
+ 1765 00:AB16 21 82 AB -  	LD		HL, INT_piece_skin
+ 1766 00:AB19 36 07 -  -  	LD		(HL), 7
+ 1767 00:AB1B 21 AC AD -  	LD		HL, MTX_piece_format_7_2
+ 1768 00:AB1E C9 -  -  -  	RET
+ 1769 00:AB1F -  -  -  -  LBL_draw_piece_7_3:
+ 1770 00:AB1F 21 82 AB -  	LD		HL, INT_piece_skin
+ 1771 00:AB22 36 07 -  -  	LD		(HL), 7
+ 1772 00:AB24 21 BC AD -  	LD		HL, MTX_piece_format_7_3
+ 1773 00:AB27 C9 -  -  -  	RET
+ 1774 00:AB28 -  -  -  -  LBL_ppiece_skin_0:
+ 1775 00:AB28 21 1C AC -  	LD		HL, MTX_ppiece_skin_0
+ 1776 00:AB2B C9 -  -  -  	RET
+ 1777 00:AB2C -  -  -  -  LBL_ppiece_skin_1:
+ 1778 00:AB2C 21 2C AC -  	LD		HL, MTX_ppiece_skin_1
+ 1779 00:AB2F C9 -  -  -  	RET
+ 1780 00:AB30 -  -  -  -  LBL_ppiece_skin_2:
+ 1781 00:AB30 21 3C AC -  	LD		HL, MTX_ppiece_skin_2
+ 1782 00:AB33 C9 -  -  -  	RET
+ 1783 00:AB34 -  -  -  -  LBL_ppiece_skin_3:
+ 1784 00:AB34 21 4C AC -  	LD		HL, MTX_ppiece_skin_3
+ 1785 00:AB37 C9 -  -  -  	RET
+ 1786 00:AB38 -  -  -  -  LBL_ppiece_skin_4:
+ 1787 00:AB38 21 5C AC -  	LD		HL, MTX_ppiece_skin_4
+ 1788 00:AB3B C9 -  -  -  	RET
+ 1789 00:AB3C -  -  -  -  LBL_ppiece_skin_5:
+ 1790 00:AB3C 21 6C AC -  	LD		HL, MTX_ppiece_skin_5
+ 1791 00:AB3F C9 -  -  -  	RET
+ 1792 00:AB40 -  -  -  -  LBL_ppiece_skin_6:
+ 1793 00:AB40 21 7C AC -  	LD		HL, MTX_ppiece_skin_6
+ 1794 00:AB43 C9 -  -  -  	RET
+ 1795 00:AB44 -  -  -  -  LBL_ppiece_skin_7:
+ 1796 00:AB44 21 8C AC -  	LD		HL, MTX_ppiece_skin_7
+ 1797 00:AB47 C9 -  -  -  	RET
+ 1798 00:AB48 -  -  -  -  CAL_mtx_4:
+ 1799 00:AB48 79 -  -  -  	LD		A, C
+ 1800 00:AB49 87 -  -  -   	ADD		A, A
+ 1801 00:AB4A 87 -  -  -  	ADD		A, A
+ 1802 00:AB4B 80 -  -  -  	ADD		A, B
+ 1803 00:AB4C 16 00 -  -  	LD		D, 0
+ 1804 00:AB4E 5F -  -  -  	LD		E, A
+ 1805 00:AB4F 19 -  -  -  	ADD		HL, DE
+ 1806 00:AB50 7E -  -  -  	LD		A, (HL)
+ 1807 00:AB51 C9 -  -  -  	RET
+ 1808 00:AB52 -  -  -  -  CAL_mtx_10:
+ 1809 00:AB52 79 -  -  -  	LD		A, C
+ 1810 00:AB53 87 -  -  -   	ADD		A, A
+ 1811 00:AB54 5F -  -  -   	LD		E, A
+ 1812 00:AB55 87 -  -  -  	ADD		A, A
+ 1813 00:AB56 87 -  -  -  	ADD		A, A
+ 1814 00:AB57 83 -  -  -  	ADD		A, E
+ 1815 00:AB58 80 -  -  -  	ADD		A, B
+ 1816 00:AB59 16 00 -  -  	LD		D, 0
+ 1817 00:AB5B 5F -  -  -  	LD		E, A
+ 1818 00:AB5C 19 -  -  -  	ADD		HL, DE
+ 1819 00:AB5D 7E -  -  -  	LD		A, (HL)
+ 1820 00:AB5E C9 -  -  -  	RET
+ 1821 00:AB5F -  -  -  -  CAL_mtx_13:
+ 1822 00:AB5F 79 -  -  -  	LD		A, C
+ 1823 00:AB60 5F -  -  -  	LD		E, A
+ 1824 00:AB61 87 -  -  -  	ADD		A, A
+ 1825 00:AB62 83 -  -  -      ADD		A, E
+ 1826 00:AB63 87 -  -  -      ADD		A, A
+ 1827 00:AB64 87 -  -  -      ADD		A, A
+ 1828 00:AB65 83 -  -  -      ADD		A, E
+ 1829 00:AB66 80 -  -  -  	ADD		A, B
+ 1830 00:AB67 16 00 -  -  	LD		D, 0
+ 1831 00:AB69 5F -  -  -  	LD		E, A
+ 1832 00:AB6A 19 -  -  -  	ADD		HL, DE
+ 1833 00:AB6B 7E -  -  -  	LD		A, (HL)
+ 1834 00:AB6C C9 -  -  -  	RET
+ 1835 00:AB6D -  -  -  -  CAL_mtx_18:
+ 1836 00:AB6D 79 -  -  -  	LD		A, C
+ 1837 00:AB6E 87 -  -  -  	ADD		A, A
+ 1838 00:AB6F 5F -  -  -  	LD		E, A
+ 1839 00:AB70 87 -  -  -  	ADD		A, A
+ 1840 00:AB71 87 -  -  -  	ADD		A, A
+ 1841 00:AB72 87 -  -  -  	ADD		A, A
+ 1842 00:AB73 83 -  -  -  	ADD		A, E
+ 1843 00:AB74 80 -  -  -  	ADD		A, B
+ 1844 00:AB75 16 00 -  -  	LD		D, 0
+ 1845 00:AB77 5F -  -  -  	LD		E, A
+ 1846 00:AB78 19 -  -  -  	ADD		HL, DE
+ 1847 00:AB79 7E -  -  -  	LD		A, (HL)
+ 1848 00:AB7A C9 -  -  -  	RET
+ 1849 00:AB7B -  -  -  -  INT_nb_ligne:
+ 1850 00:AB7B 00 -  -  -  	.DB		0
+ 1851 00:AB7C -  -  -  -  INT_lvl:
+ 1852 00:AB7C 00 00 -  -  	.DB		0, 0
+ 1853 00:AB7E -  -  -  -  INT_next_format:
+ 1854 00:AB7E 00 -  -  -  	.DB		0
+ 1855 00:AB7F -  -  -  -  INT_anc_or_new:
+ 1856 00:AB7F 00 -  -  -  	.DB		0
+ 1857 00:AB80 -  -  -  -  INT_collision_detecte:
+ 1858 00:AB80 00 -  -  -  	.DB		0
+ 1859 00:AB81 -  -  -  -  INT_quit:
+ 1860 00:AB81 00 -  -  -  	.DB		0
+ 1861 00:AB82 -  -  -  -  INT_piece_skin:
+ 1862 00:AB82 00 -  -  -  	.DB		0
+ 1863 00:AB83 -  -  -  -  INT_format:
+ 1864 00:AB83 00 -  -  -  	.DB		0
+ 1865 00:AB84 -  -  -  -  INT_rot:
+ 1866 00:AB84 00 -  -  -  	.DB		0
+ 1867 00:AB85 -  -  -  -  INT_anc_format:
+ 1868 00:AB85 00 -  -  -  	.DB		0
+ 1869 00:AB86 -  -  -  -  INT_anc_rot:
+ 1870 00:AB86 00 -  -  -  	.DB		0
+ 1871 00:AB87 -  -  -  -  INT_speed_1:
+ 1872 00:AB87 00 -  -  -  	.DB		0
+ 1873 00:AB88 -  -  -  -  INT_wait_moin_y:
+ 1874 00:AB88 00 -  -  -  	.DB		0
+ 1875 00:AB89 -  -  -  -  INT_wait_moin_y_2:
+ 1876 00:AB89 00 -  -  -  	.DB		0
+ 1877 00:AB8A -  -  -  -  INT_sp_piece_relx:
+ 1878 00:AB8A 00 -  -  -  	.DB		0
+ 1879 00:AB8B -  -  -  -  INT_sp_piece_rely:
+ 1880 00:AB8B 00 -  -  -  	.DB		0
+ 1881 00:AB8C -  -  -  -  INT_put_piece_mtx_x:
+ 1882 00:AB8C 00 -  -  -  	.DB		0
+ 1883 00:AB8D -  -  -  -  INT_put_piece_mtx_y:
+ 1884 00:AB8D 00 -  -  -  	.DB		0
+ 1885 00:AB8E -  -  -  -  INT_ppiece_on:
+ 1886 00:AB8E 00 -  -  -  	.DB		0
+ 1887 00:AB8F -  -  -  -  INT_ppiece_skin:
+ 1888 00:AB8F 00 -  -  -  	.DB		0
+ 1889 00:AB90 -  -  -  -  INT_piece_format_rot:
+ 1890 00:AB90 00 -  -  -  	.DB		00
+ 1891 00:AB91 -  -  -  -  INT_anc_piece_format_rot:
+ 1892 00:AB91 00 -  -  -  	.DB		00
+ 1893 00:AB92 -  -  -  -  INT_piece_rot:
+ 1894 00:AB92 00 -  -  -  	.DB		0
+ 1895 00:AB93 -  -  -  -  INT_piece_format:
+ 1896 00:AB93 00 -  -  -  	.DB		0
+ 1897 00:AB94 -  -  -  -  INT_ppiece_x:
+ 1898 00:AB94 00 -  -  -  	.DB		0
+ 1899 00:AB95 -  -  -  -  INT_ppiece_y:
+ 1900 00:AB95 00 -  -  -  	.DB		0
+ 1901 00:AB96 -  -  -  -  INT_ppiece_relx:
+ 1902 00:AB96 00 -  -  -  	.DB		0
+ 1903 00:AB97 -  -  -  -  INT_ppiece_rely:
+ 1904 00:AB97 00 -  -  -  	.DB		0
+ 1905 00:AB98 -  -  -  -  INT_piece_x:
+ 1906 00:AB98 00 -  -  -  	.DB		0
+ 1907 00:AB99 -  -  -  -  INT_piece_y:
+ 1908 00:AB99 00 -  -  -  	.DB		0
+ 1909 00:AB9A -  -  -  -  INT_anc_piece_relx:
+ 1910 00:AB9A 00 -  -  -  	.DB		0
+ 1911 00:AB9B -  -  -  -  INT_anc_piece_rely:
+ 1912 00:AB9B 00 -  -  -  	.DB		0
+ 1913 00:AB9C -  -  -  -  INT_piece_relx:
+ 1914 00:AB9C 00 -  -  -  	.DB		0
+ 1915 00:AB9D -  -  -  -  INT_piece_rely:
+ 1916 00:AB9D 00 -  -  -  	.DB		0
+ 1917 00:AB9E -  -  -  -  STR_bienvenue_1:
+ 1918 00:AB9E 54 65 74 72 
+              69 73 20 42 
+              79 20 4A 65 
+              61 6E 2D 44 
+              65 6E 69 73 
+              20 42 6F 69 
+              76 69 6E 00 	.DB		"Tetris By Jean-Denis Boivin", 0
+ 1919 00:ABBA -  -  -  -  STR_bienvenue_2:
+ 1920 00:ABBA 50 72 6F 67 
+              72 61 6D 6D 
+              65 64 20 69 
+              6E 20 41 53 
+              4D 20 21 00 	.DB		"Programmed in ASM !", 0
+ 1921 00:ABCE -  -  -  -  STR_bienvenue_3:
+ 1922 00:ABCE 4F 68 20 4D 
+              79 20 50 72 
+              65 63 69 6F 
+              75 73 20 4C 
+              6F 72 64 20 
+              21 00 -  -  	.DB		"Oh My Precious Lord !", 0
+ 1923 00:ABE4 -  -  -  -  STR_bienvenue_5:
+ 1924 00:ABE4 68 74 74 70 
+              3A 2F 2F 74 
+              65 61 6D 2D 
+              61 74 65 6D 
+              69 73 2E 63 
+              6F 6D 2F 00 	.DB		"http://team-atemis.com/", 0
+ 1925 00:ABFC -  -  -  -  STR_copyright_1:
+ 1926 00:ABFC 28 63 29 20 
+              32 30 30 36 
+              20 41 74 65 
+              6D 69 53 00 	.DB		"(c) 2006 AtemiS", 0
+ 1927 00:AC0C -  -  -  -  STR_choose_level:
+ 1928 00:AC0C 4C 65 76 65 
+              6C 00 -  -  	.DB		"Level", 0
+ 1929 00:AC12 -  -  -  -  STR_highscore:
+ 1930 00:AC12 48 69 67 68 
+              73 63 6F 72 
+              65 00 -  -  	.DB		"Highscore", 0
+ 1931 00:AC1C -  -  -  -  MTX_ppiece_skin_0:
+ 1932 00:AC1C 01 01 01 01 	.DB		1,1,1,1
+ 1933 00:AC20 01 01 01 01 	.DB		1,1,1,1
+ 1934 00:AC24 01 01 01 01 	.DB		1,1,1,1
+ 1935 00:AC28 01 01 01 01 	.DB		1,1,1,1
+ 1936 00:AC2C -  -  -  -  MTX_ppiece_skin_1:
+ 1937 00:AC2C 01 01 01 01 	.DB		1,1,1,1
+ 1938 00:AC30 01 00 00 01 	.DB		1,0,0,1
+ 1939 00:AC34 01 00 00 01 	.DB		1,0,0,1
+ 1940 00:AC38 01 01 01 01 	.DB		1,1,1,1
+ 1941 00:AC3C -  -  -  -  MTX_ppiece_skin_2:
+ 1942 00:AC3C 00 00 00 00 	.DB		0,0,0,0
+ 1943 00:AC40 00 01 01 00 	.DB		0,1,1,0
+ 1944 00:AC44 00 01 01 00 	.DB		0,1,1,0
+ 1945 00:AC48 00 00 00 00 	.DB		0,0,0,0
+ 1946 00:AC4C -  -  -  -  MTX_ppiece_skin_3:
+ 1947 00:AC4C 01 00 01 00 	.DB		1,0,1,0
+ 1948 00:AC50 00 00 00 01 	.DB		0,0,0,1
+ 1949 00:AC54 01 00 00 00 	.DB		1,0,0,0
+ 1950 00:AC58 00 01 00 01 	.DB		0,1,0,1
+ 1951 00:AC5C -  -  -  -  MTX_ppiece_skin_4:
+ 1952 00:AC5C 01 00 01 00 	.DB		1,0,1,0
+ 1953 00:AC60 00 01 00 01 	.DB		0,1,0,1
+ 1954 00:AC64 01 00 01 00 	.DB		1,0,1,0
+ 1955 00:AC68 00 01 00 01 	.DB		0,1,0,1
+ 1956 00:AC6C -  -  -  -  MTX_ppiece_skin_5:
+ 1957 00:AC6C 01 00 01 01 	.DB		1,0,1,1
+ 1958 00:AC70 00 00 01 01 	.DB		0,0,1,1
+ 1959 00:AC74 01 01 00 00 	.DB		1,1,0,0
+ 1960 00:AC78 01 01 00 01 	.DB		1,1,0,1
+ 1961 00:AC7C -  -  -  -  MTX_ppiece_skin_6:
+ 1962 00:AC7C 01 01 01 01 	.DB		1,1,1,1
+ 1963 00:AC80 01 01 01 01 	.DB		1,1,1,1
+ 1964 00:AC84 01 01 01 01 	.DB		1,1,1,1
+ 1965 00:AC88 01 01 01 01 	.DB		1,1,1,1
+ 1966 00:AC8C -  -  -  -  MTX_ppiece_skin_7:
+ 1967 00:AC8C 01 00 00 01 	.DB		1,0,0,1
+ 1968 00:AC90 00 01 01 00 	.DB		0,1,1,0
+ 1969 00:AC94 00 01 01 00 	.DB		0,1,1,0
+ 1970 00:AC98 01 00 00 01 	.DB		1,0,0,1
+ 1971 00:AC9C -  -  -  -  MTX_piece_format_1_0:
+ 1972 00:AC9C 00 00 00 00 	.DB		0,0,0,0
+ 1973 00:ACA0 00 01 01 00 	.DB		0,1,1,0
+ 1974 00:ACA4 00 01 01 00 	.DB		0,1,1,0
+ 1975 00:ACA8 00 00 00 00 	.DB		0,0,0,0
+ 1976 00:ACAC -  -  -  -  MTX_piece_format_2_0:
+ 1977 00:ACAC 00 00 00 00 	.DB		0,0,0,0
+ 1978 00:ACB0 00 01 00 00 	.DB		0,1,0,0
+ 1979 00:ACB4 01 01 01 00 	.DB		1,1,1,0
+ 1980 00:ACB8 00 00 00 00 	.DB		0,0,0,0
+ 1981 00:ACBC -  -  -  -  MTX_piece_format_2_1:
+ 1982 00:ACBC 00 00 00 00 	.DB		0,0,0,0
+ 1983 00:ACC0 00 01 00 00 	.DB		0,1,0,0
+ 1984 00:ACC4 01 01 00 00 	.DB		1,1,0,0
+ 1985 00:ACC8 00 01 00 00 	.DB		0,1,0,0
+ 1986 00:ACCC -  -  -  -  MTX_piece_format_2_2:
+ 1987 00:ACCC 00 00 00 00 	.DB		0,0,0,0
+ 1988 00:ACD0 00 00 00 00 	.DB		0,0,0,0
+ 1989 00:ACD4 01 01 01 00 	.DB		1,1,1,0
+ 1990 00:ACD8 00 01 00 00 	.DB		0,1,0,0
+ 1991 00:ACDC -  -  -  -  MTX_piece_format_2_3:
+ 1992 00:ACDC 00 00 00 00 	.DB		0,0,0,0
+ 1993 00:ACE0 00 01 00 00 	.DB		0,1,0,0
+ 1994 00:ACE4 00 01 01 00 	.DB		0,1,1,0
+ 1995 00:ACE8 00 01 00 00 	.DB		0,1,0,0
+ 1996 00:ACEC -  -  -  -  MTX_piece_format_3_0:
+ 1997 00:ACEC 00 00 00 00 	.DB		0,0,0,0
+ 1998 00:ACF0 00 00 00 00 	.DB		0,0,0,0
+ 1999 00:ACF4 01 01 01 01 	.DB		1,1,1,1
+ 2000 00:ACF8 00 00 00 00 	.DB		0,0,0,0
+ 2001 00:ACFC -  -  -  -  MTX_piece_format_3_1:
+ 2002 00:ACFC 00 01 00 00 	.DB		0,1,0,0
+ 2003 00:AD00 00 01 00 00 	.DB		0,1,0,0
+ 2004 00:AD04 00 01 00 00 	.DB		0,1,0,0
+ 2005 00:AD08 00 01 00 00 	.DB		0,1,0,0
+ 2006 00:AD0C -  -  -  -  MTX_piece_format_4_0:
+ 2007 00:AD0C 00 00 00 00 	.DB		0,0,0,0
+ 2008 00:AD10 01 01 00 00 	.DB		1,1,0,0
+ 2009 00:AD14 00 01 01 00 	.DB		0,1,1,0
+ 2010 00:AD18 00 00 00 00 	.DB		0,0,0,0
+ 2011 00:AD1C -  -  -  -  MTX_piece_format_4_1:
+ 2012 00:AD1C 00 00 00 00 	.DB		0,0,0,0
+ 2013 00:AD20 00 01 00 00 	.DB		0,1,0,0
+ 2014 00:AD24 01 01 00 00 	.DB		1,1,0,0
+ 2015 00:AD28 01 00 00 00 	.DB		1,0,0,0
+ 2016 00:AD2C -  -  -  -  MTX_piece_format_5_0:
+ 2017 00:AD2C 00 00 00 00 	.DB		0,0,0,0
+ 2018 00:AD30 00 01 01 00 	.DB		0,1,1,0
+ 2019 00:AD34 01 01 00 00 	.DB		1,1,0,0
+ 2020 00:AD38 00 00 00 00 	.DB		0,0,0,0
+ 2021 00:AD3C -  -  -  -  MTX_piece_format_5_1:
+ 2022 00:AD3C 00 00 00 00 	.DB		0,0,0,0
+ 2023 00:AD40 01 00 00 00 	.DB		1,0,0,0
+ 2024 00:AD44 01 01 00 00 	.DB		1,1,0,0
+ 2025 00:AD48 00 01 00 00 	.DB		0,1,0,0
+ 2026 00:AD4C -  -  -  -  MTX_piece_format_6_0:
+ 2027 00:AD4C 00 00 00 00 	.DB		0,0,0,0
+ 2028 00:AD50 00 00 01 00 	.DB		0,0,1,0
+ 2029 00:AD54 01 01 01 00 	.DB		1,1,1,0
+ 2030 00:AD58 00 00 00 00 	.DB		0,0,0,0
+ 2031 00:AD5C -  -  -  -  MTX_piece_format_6_1:
+ 2032 00:AD5C 01 01 00 00 	.DB		1,1,0,0
+ 2033 00:AD60 00 01 00 00 	.DB		0,1,0,0
+ 2034 00:AD64 00 01 00 00 	.DB		0,1,0,0
+ 2035 00:AD68 00 00 00 00 	.DB		0,0,0,0
+ 2036 00:AD6C -  -  -  -  MTX_piece_format_6_2:
+ 2037 00:AD6C 00 00 00 00 	.DB		0,0,0,0
+ 2038 00:AD70 01 01 01 00 	.DB		1,1,1,0
+ 2039 00:AD74 01 00 00 00 	.DB		1,0,0,0
+ 2040 00:AD78 00 00 00 00 	.DB		0,0,0,0
+ 2041 00:AD7C -  -  -  -  MTX_piece_format_6_3:
+ 2042 00:AD7C 00 01 00 00 	.DB		0,1,0,0
+ 2043 00:AD80 00 01 00 00 	.DB		0,1,0,0
+ 2044 00:AD84 00 01 01 00 	.DB		0,1,1,0
+ 2045 00:AD88 00 00 00 00 	.DB		0,0,0,0
+ 2046 00:AD8C -  -  -  -  MTX_piece_format_7_0:
+ 2047 00:AD8C 00 00 00 00 	.DB		0,0,0,0
+ 2048 00:AD90 01 00 00 00 	.DB		1,0,0,0
+ 2049 00:AD94 01 01 01 00 	.DB		1,1,1,0
+ 2050 00:AD98 00 00 00 00 	.DB		0,0,0,0
+ 2051 00:AD9C -  -  -  -  MTX_piece_format_7_1:
+ 2052 00:AD9C 00 01 00 00 	.DB		0,1,0,0
+ 2053 00:ADA0 00 01 00 00 	.DB		0,1,0,0
+ 2054 00:ADA4 01 01 00 00 	.DB		1,1,0,0
+ 2055 00:ADA8 00 00 00 00 	.DB		0,0,0,0
+ 2056 00:ADAC -  -  -  -  MTX_piece_format_7_2:
+ 2057 00:ADAC 00 00 00 00 	.DB		0,0,0,0
+ 2058 00:ADB0 01 01 01 00 	.DB		1,1,1,0
+ 2059 00:ADB4 00 00 01 00 	.DB		0,0,1,0
+ 2060 00:ADB8 00 00 00 00 	.DB		0,0,0,0
+ 2061 00:ADBC -  -  -  -  MTX_piece_format_7_3:
+ 2062 00:ADBC 00 01 01 00 	.DB		0,1,1,0
+ 2063 00:ADC0 00 01 00 00 	.DB		0,1,0,0
+ 2064 00:ADC4 00 01 00 00 	.DB		0,1,0,0
+ 2065 00:ADC8 00 00 00 00 	.DB		0,0,0,0
+ 2066 00:ADCC -  -  -  -  MTX_collision:
+ 2067 00:ADCC 03 03 03 03 
+              03 03 03 03 
+              03 03 03 03 
+              03 -  -  -  	.DB		3,3,3,3,3,3,3,3,3,3,3,3,3
+ 2068 00:ADD9 03 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              03 -  -  -  	.DB		3,0,0,0,0,0,0,0,0,0,0,0,3
+ 2069 00:ADE6 03 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              03 -  -  -  	.DB		3,0,0,0,0,0,0,0,0,0,0,0,3
+ 2070 00:ADF3 03 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              03 -  -  -  	.DB		3,0,0,0,0,0,0,0,0,0,0,0,3
+ 2071 00:AE00 03 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              03 -  -  -  	.DB		3,0,0,0,0,0,0,0,0,0,0,0,3
+ 2072 00:AE0D 03 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              03 -  -  -  	.DB		3,0,0,0,0,0,0,0,0,0,0,0,3
+ 2073 00:AE1A 03 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              03 -  -  -  	.DB		3,0,0,0,0,0,0,0,0,0,0,0,3
+ 2074 00:AE27 03 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              03 -  -  -  	.DB		3,0,0,0,0,0,0,0,0,0,0,0,3
+ 2075 00:AE34 03 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              03 -  -  -  	.DB		3,0,0,0,0,0,0,0,0,0,0,0,3
+ 2076 00:AE41 03 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              03 -  -  -  	.DB		3,0,0,0,0,0,0,0,0,0,0,0,3
+ 2077 00:AE4E 03 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              03 -  -  -  	.DB		3,0,0,0,0,0,0,0,0,0,0,0,3
+ 2078 00:AE5B 03 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              03 -  -  -  	.DB		3,0,0,0,0,0,0,0,0,0,0,0,3
+ 2079 00:AE68 03 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              03 -  -  -  	.DB		3,0,0,0,0,0,0,0,0,0,0,0,3
+ 2080 00:AE75 03 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              03 -  -  -  	.DB		3,0,0,0,0,0,0,0,0,0,0,0,3
+ 2081 00:AE82 03 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              03 -  -  -  	.DB		3,0,0,0,0,0,0,0,0,0,0,0,3
+ 2082 00:AE8F 03 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              03 -  -  -  	.DB		3,0,0,0,0,0,0,0,0,0,0,0,3
+ 2083 00:AE9C 03 04 04 04 
+              04 04 04 04 
+              04 04 04 04 
+              03 -  -  -  	.DB		3,4,4,4,4,4,4,4,4,4,4,4,3
+ 2084 00:AEA9 03 04 04 04 
+              04 04 04 04 
+              04 04 04 04 
+              03 -  -  -  	.DB		3,4,4,4,4,4,4,4,4,4,4,4,3
+ 2085 00:AEB6 03 04 04 04 
+              04 04 04 04 
+              04 04 04 04 
+              03 -  -  -  	.DB		3,4,4,4,4,4,4,4,4,4,4,4,3
+ 2086 00:AEC3 03 04 04 04 
+              04 04 04 04 
+              04 04 04 04 
+              03 -  -  -  	.DB		3,4,4,4,4,4,4,4,4,4,4,4,3
+ 2087 00:AED0 -  -  -  -  MTX_skin:
+ 2088 00:AED0 09 09 09 09 
+              09 09 09 09 
+              09 09 09 09 
+              09 -  -  -  	.DB		9,9,9,9,9,9,9,9,9,9,9,9,9
+ 2089 00:AEDD 09 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              09 -  -  -  	.DB		9,0,0,0,0,0,0,0,0,0,0,0,9
+ 2090 00:AEEA 09 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              09 -  -  -  	.DB		9,0,0,0,0,0,0,0,0,0,0,0,9
+ 2091 00:AEF7 09 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              09 -  -  -  	.DB		9,0,0,0,0,0,0,0,0,0,0,0,9
+ 2092 00:AF04 09 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              09 -  -  -  	.DB		9,0,0,0,0,0,0,0,0,0,0,0,9
+ 2093 00:AF11 09 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              09 -  -  -  	.DB		9,0,0,0,0,0,0,0,0,0,0,0,9
+ 2094 00:AF1E 09 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              09 -  -  -  	.DB		9,0,0,0,0,0,0,0,0,0,0,0,9
+ 2095 00:AF2B 09 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              09 -  -  -  	.DB		9,0,0,0,0,0,0,0,0,0,0,0,9
+ 2096 00:AF38 09 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              09 -  -  -  	.DB		9,0,0,0,0,0,0,0,0,0,0,0,9
+ 2097 00:AF45 09 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              09 -  -  -  	.DB		9,0,0,0,0,0,0,0,0,0,0,0,9
+ 2098 00:AF52 09 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              09 -  -  -  	.DB		9,0,0,0,0,0,0,0,0,0,0,0,9
+ 2099 00:AF5F 09 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              09 -  -  -  	.DB		9,0,0,0,0,0,0,0,0,0,0,0,9
+ 2100 00:AF6C 09 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              09 -  -  -  	.DB		9,0,0,0,0,0,0,0,0,0,0,0,9
+ 2101 00:AF79 09 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              09 -  -  -  	.DB		9,0,0,0,0,0,0,0,0,0,0,0,9
+ 2102 00:AF86 09 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              09 -  -  -  	.DB		9,0,0,0,0,0,0,0,0,0,0,0,9
+ 2103 00:AF93 09 00 00 00 
+              00 00 00 00 
+              00 00 00 00 
+              09 -  -  -  	.DB		9,0,0,0,0,0,0,0,0,0,0,0,9
+ 2104 00:AFA0 09 08 08 08 
+              08 08 08 08 
+              08 08 08 08 
+              09 -  -  -  	.DB		9,8,8,8,8,8,8,8,8,8,8,8,9
+ 2105 00:AFAD 09 08 08 08 
+              08 08 08 08 
+              08 08 08 08 
+              09 -  -  -  	.DB		9,8,8,8,8,8,8,8,8,8,8,8,9
+ 2106 00:AFBA 09 08 08 08 
+              08 08 08 08 
+              08 08 08 08 
+              09 -  -  -  	.DB		9,8,8,8,8,8,8,8,8,8,8,8,9
+ 2107 00:AFC7 09 08 08 08 
+              08 08 08 08 
+              08 08 08 08 
+              09 -  -  -  	.DB		9,8,8,8,8,8,8,8,8,8,8,8,9
+ 2108 00:AFD4 -  -  -  -  .END
+ 2109 00:AFD4 -  -  -  -  .END

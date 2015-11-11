@@ -1,0 +1,104 @@
+    5 00:4080 -  -  -  -  	
+    6 00:4080 -  -  -  -  
+    7 00:4080 3E 01 -  -  	ld a, 1
+    8 00:4082 D3 20 -  -  	out ($20), a
+    9 00:4084 21 00 00 -  	ld hl, 0
+   10 00:4087 22 4B 84 -  	ld (currow), hl	
+   11 00:408A 21 D9 40 -  	ld hl, text
+   12 00:408D 11 89 41 -  	ld de, endtext
+   13 00:4090 F3 -  -  -  	di
+   14 00:4091 -  -  -  -  start:
+   15 00:4091 D9 -  -  -  	exx
+   16 00:4092 06 08 -  -  	ld b, 8
+   17 00:4094 21 00 00 -  	ld hl, 0
+   18 00:4097 22 4B 84 -  	ld (currow), hl	
+   19 00:409A -  -  -  -  first:
+   20 00:409A D9 -  -  -  	exx
+   21 00:409B 06 10 -  -  	ld b, 16
+   22 00:409D -  -  -  -  Loop1:
+   23 00:409D 7E -  -  -  	ld a, (hl)
+   24 00:409E EF 04 45 -  	b_call _putc
+   25 00:40A1 23 -  -  -  	inc hl
+   26 00:40A2 -  -  -  -  
+   27 00:40A2 10 F9 -  -  	djnz loop1
+   28 00:40A4 -  -  -  -  doneloop1:
+   29 00:40A4 D9 -  -  -  	exx
+   30 00:40A5 10 F3 -  -  	djnz first
+   31 00:40A7 D9 -  -  -  	exx
+   32 00:40A8 -  -  -  -  done:
+   33 00:40A8 E5 -  -  -  	push hl
+   34 00:40A9 EF 72 49 -  	b_call(_getkey)
+   35 00:40AC E1 -  -  -  	pop hl
+   36 00:40AD FE 04 -  -  	cp kdown
+   37 00:40AF 20 11 -  -  	jr nz, up
+   38 00:40B1 11 7A 41 -  	ld de, endtext-15
+   39 00:40B4 B7 -  -  -  	or a
+   40 00:40B5 ED 52 -  -  	sbc hl, de
+   41 00:40B7 19 -  -  -  	add hl, de
+   42 00:40B8 30 EE -  -  	jr nc, done
+   43 00:40BA 11 70 00 -  	ld de, 16*7
+   44 00:40BD B7 -  -  -  	or a 
+   45 00:40BE ED 52 -  -  	sbc hl, de
+   46 00:40C0 18 CF -  -  	jr start
+   47 00:40C2 -  -  -  -  up:	
+   48 00:40C2 FE 03 -  -  	cp kup
+   49 00:40C4 C4 50 00 -  	call nz, 50h
+   50 00:40C7 27 40 -  -  	.dw _JForceCmdNoChar
+   51 00:40C9 11 69 41 -  	ld de, text+(16*9)
+   52 00:40CC B7 -  -  -  	or a
+   53 00:40CD ED 52 -  -  	sbc hl, de
+   54 00:40CF 19 -  -  -  	add hl, de
+   55 00:40D0 38 D6 -  -  	jr c, done
+   56 00:40D2 11 90 00 -  	ld de, 16*9
+   57 00:40D5 ED 52 -  -  	sbc hl, de
+   58 00:40D7 18 B8 -  -  	jr start
+   59 00:40D9 -  -  -  -  text:
+   60 00:40D9 -  -  -  -  #include "text.txt"
+Listing for file "C:\Users\Noah Boorstin\Documents\asm\apps\text.txt"
+    1 00:40D9 20 20 20 20 
+              20 20 20 20 
+              20 20 20 20 
+              20 20 20 20 
+              42 6C 61 74 
+              65 6E 74 6C 
+              79 6E 6F 74 
+              63 68 65 61 
+              74 69 6E 67 
+              20 6F 6E 20 
+              74 68 69 73 
+              2E 2E 2E 20 
+              4F 72 20 49 
+              20 64 6F 6E 
+              27 74 20 6B 
+              6E 6F 77 2E 
+              49 20 63 61 
+              6E 27 74 20 
+              72 65 61 6C 
+              6C 79 20 20 
+              73 65 65 20 
+              68 6F 77 20 
+              74 65 78 74 
+              20 69 73 20 
+              68 65 6C 70 .db "                Blatentlynotcheating on this... Or I don't know.I can't really  see how text is help"
+    2 00:413D 66 75 6C 20 
+              64 75 72 69 
+              6E 67 20 61 
+              74 65 73 74 
+              2E 20 20 20 
+              20 20 20 20 
+              20 20 20 20 
+              49 20 67 75 
+              65 73 73 2E 
+              2E 2E 20 20 
+              20 20 20 20 
+              6D 6F 72 65 
+              20 20 20 20 
+              20 20 20 20 
+              20 20 20 20 
+              74 65 78 74 
+              2E 2E 2E 6F 
+              6B 61 79 3F 
+              20 20 20 20 .db "ful during atest.           I guess...      more            text...okay?    "
+Listing for file "C:\Users\Noah Boorstin\Documents\asm\apps\a.z80"
+   61 00:4189 -  -  -  -  endtext:
+   62 00:4189 -  -  -  -  end

@@ -1,0 +1,113 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+
+	.org 9D93h
+	.db $BB,$6D
+	
+	IN A, ($0E)
+	PUSH AF
+	IN A, (6)
+	PUSH AF
+	LD A, $7B
+	CALL outputPage
+	LD HL, $5092
+	LD E, (HL)
+	INC HL
+	LD D, (HL)
+	INC HL
+	LD A, (HL)
+	CALL outputPage
+	EX DE, HL
+	LD A, $CC
+	LD BC, $FFFF
+	CPIR
+	LD E, (HL)
+	INC HL
+	LD D, (HL)
+	PUSH DE
+	POP IX
+	LD HL, $8080
+	LD (HL), $C3
+	INC HL
+	LD (HL), returnPoint & %11111111
+	INC HL
+	LD (HL), returnPoint >> 8
+	LD HL, pagedBuf
+	LD (HL), $80
+	LD DE, pagedBuf+1
+	LD BC, 49
+	LDIR
+	LD (iMathPtr5), SP
+	LD HL, (iMathPtr5)
+	LD DE, $8000
+	LD BC, 50
+	LDIR
+	LD DE, (iMathPtr5)
+	LD HL, -12
+	ADD HL, DE
+	LD (iMathPtr5), HL
+	LD IY, $0018-$25
+	LD A, 50
+	LD (pagedCount), A
+	LD A, 8
+	LD (arcInfo), A
+	JP (IX)
+outputPage:
+	BIT 7, A
+	RES 7, A
+	LD B, A
+	LD A, 1
+	JR NZ, opBig
+	DEC A
+opBig:
+	OUT ($0E), A
+	LD A, B
+	CALL translatePage
+	OUT (6), A
+	RET
+translatePage:
+	LD B, A
+	IN A, (2)
+	AND $80
+	JR Z, _is83P
+	IN A, ($21)
+	AND 3
+	LD A, B
+	RET NZ
+	AND $3F
+	RET
+_is83P:
+	LD A, B
+	AND $1F
+	RET
+returnPoint:
+	LD HL, $0018
+	LD (HL), $0C3
+	LD BC, 50
+returnWait:
+	LD IY, flags
+	DJNZ returnWait
+	LD HL, (iMathPtr5)
+	LD DE, 12
+	ADD HL, DE
+	LD SP, HL
+	EX DE, HL
+	LD HL, $8000
+	LDIR
+	
+	
+	LD A, 7
+	B_CALL($8084)
+	POP AF
+	OUT (6), A
+	POP AF
+	OUT (0E), A
+
+	RET
+	
+end 

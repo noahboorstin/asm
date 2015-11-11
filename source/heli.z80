@@ -1,0 +1,71 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+	.org 9D93h
+	.db $BB,$6D
+	
+	B_CALL(_ClrLCDFull) ;because i'm lazy
+	LD A, $20 ;initial setting up of stuff
+	OUT ($10), A
+	LD A, $95
+	LD D, A ;position of the thing...do something with this later
+	OUT ($10), A
+	LD D, $1
+	LD E, $2B
+	
+	LD A, $8 ;display the thing
+	OUT ($11), A
+	LD A, $C
+	OUT ($11), A
+	LD A, $8C
+	OUT ($11), A
+	LD A, $CC
+	OUT ($11), A
+	LD A, $FF
+	OUT ($11), A
+	LD B, 3
+	LD A, $C
+First:
+	OUT ($11), A
+	DJNZ First
+	LD A, $8
+	OUT ($11), A 
+Rand:		;get a random number in the right range...
+	LD A, R
+	AND %00111111
+	CP 45
+	JR NC, Rand
+	ADD A, $80
+	OUT ($10), A	
+	LD A, E
+	OUT ($10), A
+	LD B, 20
+Number:
+	LD A, $1 ;this value will change through the magic of self-modifying code...hopefully
+Disp:		;display the line
+	OUT ($11), A
+	DJNZ Disp	
+	LD A, (Number+1) ;LD A, [the number above]
+	RLCA ;this should shift A 1 to the left, copy bit 7 into the carry flag...hopefully
+	LD (Number+1), A ;same as above
+	JR NC, Skip
+	DEC E
+	LD A, E
+	CP $21
+	JR NC, Skip
+	CP $19
+	JR Z, New
+	;add something here to see if you loose
+	;if you haven't lost yet:
+	JR Skip
+New:
+	LD E, $2B
+Skip:
+	B_CALL(_GetKey) ;just for testing...
+	RET
+	
+end 

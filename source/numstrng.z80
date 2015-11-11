@@ -1,0 +1,151 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+.LIST
+
+	.org 9D93h
+	.db $BB,$6D ;not sure what these do...not sure why they're always there...
+	;NOTE: because i'm lazy, this program uses the I register
+	;THIS MUST BE RESET TO ZERO!
+	
+	LD HL, VarA
+	B_CALL(_Mov9ToOP1)
+	B_CALL(_FindSym)
+	EX DE, HL
+	LD B, 0
+	LD A, (HL)
+	CP 0
+	JR Z, Positive
+	LD B, 1 ;+/- is B
+Positive:	
+	INC HL
+	LD A, (HL)
+	SUB 7fh
+	LD C, A ;decimal location is C
+	INC HL
+	PUSH HL
+	PUSH BC
+	
+	LD DE, 5
+	ADD HL, DE
+	ADD A, B
+	LD D, A ;D is decimal place
+	LD A, 12
+	ADD A, B
+	LD E, A
+Repeat:
+	LD A, (HL)
+	AND %00001111
+	CP 0
+	JR NZ, Done2
+	LD A, E
+	CP D
+	JR Z, Done2
+	DEC E
+	LD A, (HL)
+	CP 0
+	JR NZ, Done2
+	LD A, E
+	CP D
+	JR Z, Done2
+	DEC HL
+	DEC E
+	JR Repeat
+Done2:
+	LD A, E
+	CP D
+	JR Z, Skip
+	INC E
+Skip:
+	LD D, 0
+	;as of here: 
+	;E is length, stack holds (VarA's location), +/-, decimal
+	EXX
+	LD HL, Str1
+	B_CALL(_Mov9ToOP1)
+	B_CALL(_FindSym)
+	JR C, NotFound
+	B_CALL(_DelVar)
+NotFound:
+	LD HL, Str1
+	B_CALL(_Mov9ToOP1)
+	EXX
+	EX DE, HL
+	PUSH HL ;(VarA's location), +/-, decimal, 0, length
+	B_CALL(_CreateStrng)
+	EX DE, HL
+	INC HL
+	INC HL
+	POP DE
+	POP BC
+	LD A, E
+	SUB C
+	LD I, A ;CAREFUL...
+	LD A, B
+	CP 0
+	JR Z, Meh
+	LD (HL), 0b0h ;negatiave sign
+	LD A, I
+	DEC A
+	LD I, A
+	INC HL
+	DEC E
+Meh:
+	LD B, E ;B is now length
+	;DEC B ;just testing...
+	POP DE
+Rpt:
+	LD A, I
+	LD C, B
+	CP C
+	CALL Z, Decimal
+	LD A, (DE)
+	AND %11110000
+	SRL A
+	SRL A
+	SRL A
+	SRL A
+	ADD A, 30h
+	LD (HL), A
+	INC HL
+	DEC B
+	LD A, B
+	CP 0
+	JR Z, Finished
+	LD A, I
+	LD C, B
+	CP C
+	CALL Z, Decimal
+	LD A, (DE)
+	AND %00001111
+	ADD A, 30h
+	LD (HL), A
+	INC HL
+	INC DE
+	DEC B
+	LD A, B
+	CP 0
+	JR Z, Finished
+	JR Rpt
+Finished:
+	LD A, I
+	LD C, B
+	CP C
+	CALL Z, Decimal
+	LD A, 0
+	LD I, A
+	RET ;end of program--MAKE SURE STACK IS RETURNED TO ORIGINAL POSITION, I IS 0!!!
+	
+Decimal:
+	LD (HL), 3ah
+	INC HL
+	RET
+	
+VarA:
+	.DB RealObj, tA, 0, 0
+Str1:
+	.DB StrngObj,tVarStrng,tStr1,0
+end 

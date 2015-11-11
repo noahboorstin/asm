@@ -1,0 +1,6 @@
+ARITHMETIC SEQUENCES
+A(n)=A(1)+d(n-1)S(n)=(n/2)(2a+(n-1)d)
+Derivation:
+...
+GEOMETRIC SEQUENCES
+...

@@ -1,0 +1,373 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+
+	.org 9D93h
+	.db $BB,$6D
+	
+	B_CALL(_ClrLCDFull)
+	DI
+	
+
+	LD DE, $2280 ;initial setup
+	LD C, $10
+	EXX
+	LD C, 5 
+	
+	LD A, 2 ;end setup
+	
+DisplayThing: ;display thing
+	LD E, A
+Horizontal:
+	LD A, $27
+	OUT ($10), A
+	LD A, $BB
+	OUT ($10), A
+
+	LD B, 4
+	LD HL, MoreThings
+Loop1:
+	LD D, (HL)
+	LD A, E
+	CP 0
+	JR Z, Done1
+Rpt1:
+	SRL D
+	DEC A
+	JR NZ, Rpt1
+Done1:
+	LD A, D
+	OUT ($11), A
+	INC HL
+	DJNZ Loop1
+	LD A, E
+	CP 0
+	JR Z, Done3
+	LD A, (Horizontal+1)
+	INC A
+	OUT ($10), A
+	LD A, $BB
+	OUT ($10), A
+	LD B, 4
+	LD HL, MoreThings
+Loop2:
+	LD D, (HL)
+	LD A, 8
+	SUB E
+	CP 0
+	JR Z, Done2
+Rpt2:
+	SLA D
+	DEC A
+	JR NZ, Rpt2
+Done2:
+	LD A, D
+	OUT ($11), A
+	INC HL
+	DJNZ Loop2
+	LD A, E
+Done3:
+	EX AF, AF' ;done displaying ship
+SamePlace:
+	LD A, $07 ;fun things for this function: 
+					;D': horizontal position, 
+					;C: horizontal rotation, 
+					;E': vertical position
+	OUT ($10), A
+	LD HL, Things
+	EXX
+	LD B, 32
+Disp2:
+	OUT (C), D
+	OUT (C), E
+	EXX
+	LD B, 10
+	LD E, 0
+Disp:
+	LD D, (HL)
+	LD A, C
+	CP 0
+	JR Z, DoneShifting
+Shift: ;look for a better way to do this
+	SRL D
+	BIT 0, E
+	JR Z, Zero
+	SET 7, D
+Zero:
+	RR E
+	DEC A
+	JR NZ, Shift
+DoneShifting:
+	LD A, 8 
+	SUB C
+	CP 8
+	JR Z, DoneShifting1
+	CP 0
+	JR Z, DoneShifting1
+Shift1:
+	RR E
+	DEC A
+	JR NZ, Shift1
+DoneShifting1:
+	LD A, D
+	OUT ($11), A
+	BIT 0, B
+	JR NZ, Uh
+	INC HL
+	JR Uh1
+Uh:
+	DEC HL
+Uh1:
+	DJNZ Disp	
+	INC HL
+	LD A, C
+	CP 6
+	JR C, Fine
+	LD A, (HL)
+	RLA
+	BIT 0, C
+	JR NZ, Okay
+	SLA A
+Okay:
+	OUT ($11), A
+Fine:
+	INC HL
+	EXX
+	INC E
+	LD A, B
+	CP 25
+	JR Z, Space
+	CP 13
+	JR NZ, DoneSpace
+Space:
+	SUB 4
+	LD B, A
+	LD A, E
+	ADD A, 4
+	LD E, A	
+DoneSpace:
+	DJNZ Disp2
+	LD A, E
+	SUB 32
+	LD E, A
+	EXX 
+	LD A, 5
+	OUT ($10), A ;done displaying things
+	;moving things:
+MoveDirection:
+	JR MoveLeft
+MoveLeft:
+	DEC C
+	LD A, C
+	CP 4
+	JR NZ, SkipMoveLeft
+	EXX
+	LD A, D
+	CP $22
+	JR Z, EXXSkipMoveLeft
+	ADD A, 10
+	JR ClearBehind
+EXXSkipMoveLeft:
+	EXX
+	LD A, C
+SkipMoveLeft:
+	CP $FF
+	JP NZ, DoneMoving
+	LD C, 7
+	EXX
+	DEC D
+	LD A, D
+	CP $1F
+	JR Z, GoRight
+	EXX
+	JP DoneMoving
+GoRight:
+	LD A, 47 ;i hate modifying JRs...if something's not right, this is probably it
+	LD (MoveDirection+1), A
+	INC D ;if here, needs to change direction
+	EXX
+	LD C, 0
+	JR ClearAbove
+MoveRight:
+	INC C
+	LD A, C
+	CP 6
+	JR NZ, SkipMoveRight
+	EXX
+	LD A, D
+	CP $22
+	JR Z, GoLeft
+	EXX
+	JR DoneMoving
+SkipMoveRight:
+	CP 8
+	JR NZ, DoneMoving
+	LD C, 0
+	EXX
+	LD A, D
+	INC D
+ClearBehind:
+	OUT ($10), A
+	LD A, E
+	ADD A, 16
+	OUT ($10), A
+	LD A, 0
+	OUT ($11), A
+	OUT ($11), A
+	OUT ($11), A
+	LD A, E
+	ADD A, 25
+	OUT ($10), A
+	LD A, 0
+	OUT ($11), A
+	OUT ($11), A
+	OUT ($11), A
+	OUT ($11), A
+	EXX
+	JR DoneMoving
+GoLeft:
+	LD A, 0
+	LD (MoveDirection+1), A ;if here, needs to change direction
+	LD A, E
+	CP $9B
+	JP Z, EndProgram
+	EXX
+	DEC C
+ClearAbove:
+	EXX
+	LD A, 7
+	OUT ($10), A
+	OUT (C), D
+	OUT (C), E
+	LD A, 0
+	LD B, 10
+ClearAbove1:
+	OUT ($11), A
+	DJNZ ClearAbove1
+	OUT (C), D
+	LD A, E
+	ADD A, 12
+	OUT ($10), A
+	LD A, 0
+	LD B, 10
+ClearAbove2:
+	OUT ($11), A
+	DJNZ ClearAbove2
+	OUT (C), D
+	LD A, E
+	ADD A, 24
+	OUT ($10), A
+	LD A, 0
+	LD B, 10
+ClearAbove3:
+	OUT ($11), A
+	DJNZ ClearAbove3
+	LD A, 5
+	OUT ($10), A
+	INC E
+	EXX
+DoneMoving:
+	LD A, $FE ;activate keys
+	OUT (1), A
+	NOP
+	NOP
+	IN A, (1)
+	CP $FD ;left
+	JR NZ, NotLeft
+	EX AF, AF'
+	DEC A
+	JR NZ, ThingLeft2
+	LD A, (Horizontal+1)
+	INC A
+	OUT ($10), A
+	LD A, $BD
+	OUT ($10), A
+	LD A, 0
+	OUT ($11), A
+	OUT ($11), A	
+ThingLeft2:
+	CP $FF
+	JP NZ, DisplayThing
+	LD A, (Horizontal+1)
+	CP $20
+	JR NZ, ThingLeft
+	LD A, 0
+	EX AF, AF'
+	JP SamePlace
+ThingLeft:
+	DEC A
+	LD (Horizontal+1), A
+	LD A, 7
+	JP DisplayThing
+NotLeft:
+	CP $FB ;right
+	JR NZ, NotRight
+	LD A, (Horizontal+1)
+	CP $2B
+	JP Z, SamePlace
+	EX AF, AF'
+	INC A
+	CP 8
+	JP NZ, DisplayThing
+	LD A, (Horizontal+1)
+	OUT ($10), A
+	INC A
+	LD (Horizontal+1), A
+	LD A, $BD
+	OUT ($10), A
+	LD A, 0
+	OUT ($11), A
+	OUT ($11), A	
+	JP DisplayThing	
+NotRight:
+	CP $FE ;down
+	JR Z, EndProgram
+	JP SamePlace
+EndProgram:
+	EI
+	RET
+Things:
+	.db %00001100, %00000000
+	.db %00011110, %00000000
+	.db %00111111, %00000000
+	.db %01101101, %10000000
+	.db %01111111, %10000000
+	.db %00010010, %00000000
+	.db %00101101, %00000000
+	.db %01010010, %10000000
+	
+	.db %00100000, %10000000
+	.db %00010001, %00000000
+	.db %00111111, %10000000
+	.db %01101110, %11000000
+	.db %11111111, %11100000
+	.db %10111111, %10100000
+	.db %10100000, %10100000
+	.db %00011011, %00000000
+	
+	.db %00100000, %10000000
+	.db %10010001, %00100000
+	.db %10111111, %10100000
+	.db %11101110, %11100000
+	.db %11111111, %11100000
+	.db %01111111, %11000000
+	.db %00100000, %10000000
+	.db %01000000, %01000000
+MoreThings:
+	.db %00111100
+	.db %00111100
+	.db %11111111
+	.db %11111111
+end 
+
+
+
+
+
+
+
+

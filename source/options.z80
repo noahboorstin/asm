@@ -1,0 +1,87 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+.LIST
+
+	.org 9D93h
+	.db $BB,$6D
+
+	RES AppTextSave, (IY + AppFlags)
+	B_CALL(_ClrScrnFull)
+	B_CALL(_RunIndicOff)
+
+	ld HL, 0
+	ld (CurRow), HL
+
+	SET TextInverse, (IY + TextFlags)
+
+	ld HL, Intro
+	B_CALL(_PutS)
+
+	RES TextInverse, (IY + TextFlags)
+
+	;B_CALL(_NewLine)
+	
+	ld HL, Line1
+	B_CALL(_PutS)
+	B_CALL(_NewLine)
+	
+	ld HL, Line2
+	B_CALL(_PutS)
+	B_CALL(_NewLine)
+	
+	ld HL, Line3
+	B_CALL(_PutS)
+	B_CALL(_NewLine)
+
+	
+	ld HL, Line4
+	B_CALL(_PutS)
+	B_CALL(_NewLine)
+
+Key:
+	B_CALL(_GetCSC)
+	
+	CP sk1
+	JR Z, One
+	
+	CP sk2
+	JR Z, Two
+	
+	CP sk3
+	JR Z, Three
+	
+	CP sk4
+	JR Z, Four
+	
+	JR Key
+One:
+	SET TextInverse, (IY + TextFlags)
+	JR End
+Two:
+	RES TextInverse, (IY + TextFlags)
+	JR End
+Three:
+	SET LwrCaseActive, (IY + AppLwrCaseFlag)
+	JR End
+Four:
+	RES LwrCaseActive, (IY + AppLwrCaseFlag)
+End:
+	;B_CALL(_RunIndicOn)
+    ret
+
+Intro:
+	.DB " Fun Options :) ", 0
+Line1:
+	.DB "1: Invert On", 0
+Line2:
+	.DB "2: Invert Off", 0
+Line3:
+	.DB "3: Lowercase On", 0
+Line4:
+	.DB "4: Lowercase Off", 0
+
+end

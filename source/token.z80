@@ -1,0 +1,50 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+	.org 9D93h
+	.db $BB,$6D	
+#define location AppBackUpScreen
+#define ^ location-Stuff+
+	LD HL, location
+	LD A, 1
+	B_CALL($4F99) ;enable parser hook
+	LD HL, Stuff
+	LD DE, location
+	LD BC, EndStuff-Stuff
+	LDIR
+	RET
+	
+Stuff:
+	.db $83
+	LD A, D
+	CP $01
+	RET NZ
+	LD A, E
+	CP $30
+	JR Z, Sto
+	CP $32
+	RET NZ
+	LD HL, location+RclStuff-Stuff
+	LD DE, localTokStr+1
+	LD BC, 14
+	LDIR
+	LD HL, localTokStr
+	RET
+Sto:
+	LD HL, location+StoStuff-Stuff
+	LD DE, localTokStr+1
+	LD BC, 13
+	LDIR
+	LD HL, localTokStr
+	RET
+RclStuff:
+	.db 13, "RecallSprite("
+StoStuff:	
+	.db 12, "StoreSprite("
+EndStuff:
+
+end

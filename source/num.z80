@@ -1,0 +1,108 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+.LIST
+
+	.org 9D93h
+	.db $BB,$6D
+	LD HL, VarA
+	B_CALL(_Mov9ToOP1)
+	B_CALL(_FindSym)
+	INC DE
+	EX DE, HL
+	LD A, (HL)
+	;LD E, -128
+	;ADD A, E
+	SUB 127 
+	LD (Point), A	
+	INC HL
+	PUSH HL
+	
+;string1:
+	LD HL, String1
+	B_CALL(_Mov9ToOP1)
+	B_CALL(_FindSym)
+	B_CALL(_DelVar)
+	LD HL, String1
+	B_CALL(_Mov9ToOP1)
+	LD HL, 14
+	B_CALL(_CreateStrng)
+	LD HL, String1
+	B_CALL(_Mov9ToOP1) ;try canceling these sometime...
+	B_CALL(_FindSym)  ;...
+	INC DE
+	INC DE 
+	EX DE, HL
+	POP DE
+	PUSH HL ;top of stack is start of string
+	LD B, 0
+rpt:
+	;decimal point:	
+	LD A, (Point)
+	CP B
+	JR NZ, Skip1
+	POP HL
+	LD A, $3A
+	LD (HL), A
+	INC HL
+	PUSH HL
+	JR Back
+Skip1:	
+	EX DE, HL
+	LD A, (HL)
+	EX DE, HL; DE is the number
+	SRL A
+	SRL A	
+	SRL A	
+	SRL A
+	POP HL
+	LD C, $30
+	ADD A, C
+	LD (HL), A
+	INC HL
+	PUSH HL
+
+	INC B
+	LD A, (Point)
+	CP B
+	JR NZ, Skip2
+	POP HL
+	LD A, $3A
+	LD (HL), A
+	INC HL
+	PUSH HL
+	JR Back	
+Skip2:
+	EX DE, HL
+	LD A, (HL)
+	EX DE, HL
+	INC DE
+	AND $F
+	POP HL
+	LD C, $30
+	ADD A, C
+	LD (HL), A
+	INC HL
+	PUSH HL
+Back:	
+	;done?
+	INC B
+	LD A, B
+	CP 28 ; (2*14) this might change eventually...
+	JR NZ, rpt
+	
+	POP HL
+	
+	RET ;end of program
+	
+VarA:
+	.DB RealObj,tA,0,0
+String1:
+	.DB StrngObj,tVarStrng,tStr1,0,0
+Point .EQU AppBackUpScreen
+
+	
+	end

@@ -1,0 +1,86 @@
+.NOLIST
+#define AppName "test..:)"
+#include "ti83plus.inc"
+.LIST
+
+	in a, (6)
+	ld hl, hookstuff
+	rst 28h
+	.dw $5026
+	bjump(_JForceCmdNoChar) ;ret
+hookstuff:
+	.db 83h             ; Required for all hooks
+	or a ;cp 0
+	jr nz, ReturnZ
+	ld de, (965bh) ;searching for '='
+	ld hl, (965fh)
+	or a
+	sbc hl, de
+	ld b, l
+	ex de, hl
+	inc b
+SearchLoop:
+	ld a, (hl)
+	cp tEQ ;'='
+	jr z, SearchFound
+	cp tColon ;':' if running in a program, needs to see if command is done (':' is newline)
+	jr z, SearchFailed
+	inc hl
+	djnz SearchLoop 
+SearchFailed:
+ReturnZ:
+	cp a
+	ret
+SearchFound:
+	ld de, (965fh) ;checking if no argument on either side of '='
+	or a
+	sbc hl, de
+	ret z
+	add hl, de
+	ld de, (965bh)
+	or a
+	sbc hl, de
+	ret z
+	ld b, l ;checking first half of equation
+	add hl, de
+	ex de, hl
+	ld a, tX ;'X'
+	set 7, (iy+asm_flag1)
+check1loop:
+	cp (hl)
+	jr z, FoundCheck1Loop
+	inc hl
+	djnz check1loop
+	res 7, (iy+asm_flag1)
+FoundCheck1Loop:
+	ld hl, (965fh) ;checking second half of equation
+	or a
+	sbc hl, de
+	ld b, l
+	inc de
+	add hl, de
+	ex de, hl
+	ld a, tX ;'X'
+	set 6, (iy+asm_flag1)
+check2loop:
+	cp (hl)
+	jr z, FoundCheck2Loop
+	inc hl
+	djnz check2loop
+	res 6, (iy+asm_flag1)
+FoundCheck2Loop:
+	
+	ld hl, Ans
+	rst 20h
+	rst 10h
+	rst 28h ;my B_CALLs seem to be broken... rst 28h/.dw [name] is the same thing
+	.dw _DelVar
+	ld hl, 4 ;length of answer string
+	rst 28h
+	.dw _CreateStrng ;de points to location of string; copy stuff into it
+	ld hl, Ans
+	rst 20h
+	or 1    ; set NZ
+	ret
+Ans:
+	.db StrngObj, tAns, 0, 0

@@ -1,0 +1,85 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+.LIST
+
+	.org 9D93h
+	.db $BB,$6D
+
+	B_CALL(_ClrLCDFull)
+	LD HL, 0
+	LD (CurRow), HL
+	LD A, D0HD1H
+	OUT (bport), A
+	LD HL, Start
+	B_CALL(_PutS)
+Begin:
+	B_CALL(_GetCSC)
+	CP 0
+	JR Z, Begin
+
+	LD A, D0HD1L
+	OUT (bport), A
+Repeat:
+	B_CALL(_GetCSC)
+	CP skClear
+	JR Z, Done
+	CP 0
+	JR Z, Repeat
+	LD D, %10000000
+	LD C, A
+	
+Loop:
+	LD A, C
+	AND D
+	LD B, A
+	CALL Send
+	SRL D
+	LD A, D
+	CP 0
+	JR Z, Sent
+	JR Loop
+Sent:
+	LD HL, MsgSent
+	B_CALL(_PutS)
+	B_CALL(_NewLine)	
+	JR Repeat
+Zero:
+	LD A, D0HD1H
+	OUT (bport), A
+Wait:
+	B_CALL(_GetCSC)
+	CP 0
+	JR Z, Wait
+	LD A, D0HD1L
+	OUT (bport), A	
+	JP Um
+One:
+	LD A, D0LD1H
+	OUT (bport), A
+Wait2:
+	B_CALL(_GetCSC)
+	CP 0
+	JR Z, Wait2
+	LD A, D0HD1L
+	OUT (bport), A
+	JP Um
+Done:
+	LD A, D0HD1H
+	OUT (bport), A
+	RET
+MsgSent:
+	.db "Sent!  ", 0
+Start:
+	.db "Start?", 0
+Send:
+	LD A, B
+	CP 0
+	JR Z, Zero
+	JR One
+Um:
+	RET
+end

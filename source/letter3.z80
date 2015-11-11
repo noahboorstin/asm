@@ -1,0 +1,22 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+
+	.org 9D93h
+	.db $BB,$6D
+#define keyPort 1
+
+	IN A, (6)
+	PUSH AF
+	LD A, $1C
+	OUT (6), A
+	LD A, 1
+	CALL 
+	
+	RET
+	
+end 

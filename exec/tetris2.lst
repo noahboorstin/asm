@@ -1,0 +1,1222 @@
+    6 00:0000 -  -  -  -  
+    7 00:0000 -  -  -  -  #define ArrowKeys $FE
+    8 00:0000 -  -  -  -  #define DownKey $FE
+    9 00:0000 -  -  -  -  #define LeftKey $FD
+   10 00:0000 -  -  -  -  #define RightKey $FB
+   11 00:0000 -  -  -  -  #define UpKey $F7
+   12 00:0000 -  -  -  -  
+   13 00:0000 -  -  -  -  	.org 9D93h
+   14 00:9D93 BB 6D -  -  	.db $BB,$6D	
+   15 00:9D95 -  -  -  -  	
+   16 00:9D95 EF -  -  -  	rst 28h
+   17 00:9D96 40 45 -  -  	.dw _ClrLCDFull
+   18 00:9D98 F3 -  -  -  	DI
+   19 00:9D99 21 38 1F -  	LD HL, $1F38
+   20 00:9D9C 22 D7 86 -      LD  (PenCol), HL
+   21 00:9D9F 3E 30 -  -  	LD A, $30
+   22 00:9DA1 EF -  -  -  	RST 28h
+   23 00:9DA2 5E 45 -  -  	.dw _VPutMap
+   24 00:9DA4 -  -  -  -  RandomNum1:
+   25 00:9DA4 ED 5F -  -  	LD A, R
+   26 00:9DA6 E6 07 -  -  	AND %00000111
+   27 00:9DA8 FE 07 -  -  	CP 7
+   28 00:9DAA 28 F8 -  -  	JR Z, RandomNum1
+   29 00:9DAC 32 73 99 -  	LD (AppBackUpScreen+257), A
+   30 00:9DAF AF -  -  -  	XOR A
+   31 00:9DB0 32 74 99 -  	LD (AppBackUpScreen+258), A
+   32 00:9DB3 32 75 99 -  	LD (AppBackUpScreen+259), A
+   33 00:9DB6 -  -  -  -  	; IN A, ($20)
+   34 00:9DB6 -  -  -  -  	; PUSH AF
+   35 00:9DB6 -  -  -  -  	; LD A, 1
+   36 00:9DB6 -  -  -  -  	; OUT ($20), A
+   37 00:9DB6 3E 47 -  -  	LD A, $47
+   38 00:9DB8 D3 30 -  -  	OUT ($30), A
+   39 00:9DBA 3E 00 -  -  	LD A, 0
+   40 00:9DBC D3 31 -  -  	OUT ($31), A
+   41 00:9DBE 3E 04 -  -  	LD A, 4
+   42 00:9DC0 D3 32 -  -  	OUT ($32), A
+   43 00:9DC2 FD CB 21 B6 	RES 6, (IY+Asm_Flag1)
+   44 00:9DC6 FD CB 21 8E 	RES 1, (IY+Asm_Flag1)
+   45 00:9DCA FD CB 21 86 	RES 0, (IY+Asm_Flag1)
+   46 00:9DCE FD CB 22 BE 	RES 7, (IY+Asm_Flag2)
+   47 00:9DD2 21 72 98 -  	LD HL, AppBackUpScreen
+   48 00:9DD5 11 73 98 -  	LD DE, AppBackUpScreen+1
+   49 00:9DD8 36 00 -  -  	LD (HL), 0
+   50 00:9DDA 01 00 01 -  	LD BC, 256 ;4*64
+   51 00:9DDD ED B0 -  -  	LDIR ;clears first chunck of AppBackUpScreen
+   52 00:9DDF 3E 20 -  -  	LD A, $20
+   53 00:9DE1 CD 5B A3 -  	CALL LCDDelay
+   54 00:9DE4 D3 10 -  -  	OUT ($10), A
+   55 00:9DE6 3E 80 -  -  	LD A, $80
+   56 00:9DE8 CD 5B A3 -  	CALL LCDDelay
+   57 00:9DEB D3 10 -  -  	OUT ($10), A
+   58 00:9DED 3E 80 -  -  	LD A, %10000000
+   59 00:9DEF 21 72 98 -  	LD HL, AppBackUpScreen
+   60 00:9DF2 06 3F -  -  	LD B, 63
+   61 00:9DF4 -  -  -  -  LeftLineLoop:
+   62 00:9DF4 CD 5B A3 -  	CALL LCDDelay
+   63 00:9DF7 D3 11 -  -  	OUT ($11), A
+   64 00:9DF9 77 -  -  -  	LD (HL), A
+   65 00:9DFA 23 -  -  -  	INC HL
+   66 00:9DFB 23 -  -  -  	INC HL
+   67 00:9DFC 23 -  -  -  	INC HL
+   68 00:9DFD 36 01 -  -  	LD (HL), %00000001
+   69 00:9DFF 23 -  -  -  	INC HL
+   70 00:9E00 10 F2 -  -  	DJNZ LeftLineLoop
+   71 00:9E02 3E 23 -  -  	LD A, $23
+   72 00:9E04 CD 5B A3 -  	CALL LCDDelay
+   73 00:9E07 D3 10 -  -  	OUT ($10), A
+   74 00:9E09 3E 80 -  -  	LD A, $80
+   75 00:9E0B CD 5B A3 -  	CALL LCDDelay
+   76 00:9E0E D3 10 -  -  	OUT ($10), A	
+   77 00:9E10 06 3F -  -  	LD B, 63
+   78 00:9E12 3E 01 -  -  	LD A, %00000001
+   79 00:9E14 -  -  -  -  RightLineLoop:
+   80 00:9E14 CD 5B A3 -  	CALL LCDDelay
+   81 00:9E17 D3 11 -  -  	OUT ($11), A
+   82 00:9E19 10 F9 -  -  	DJNZ RightLineLoop
+   83 00:9E1B -  -  -  -  	
+   84 00:9E1B 3E 07 -  -  	LD A, 7
+   85 00:9E1D CD 5B A3 -  	CALL LCDDelay
+   86 00:9E20 D3 10 -  -  	OUT ($10), A
+   87 00:9E22 3E 20 -  -  	LD A, $20
+   88 00:9E24 CD 5B A3 -  	CALL LCDDelay
+   89 00:9E27 D3 10 -  -  	OUT ($10), A
+   90 00:9E29 3E BF -  -  	LD A, $BF
+   91 00:9E2B CD 5B A3 -  	CALL LCDDelay
+   92 00:9E2E D3 10 -  -  	OUT ($10), A
+   93 00:9E30 06 04 -  -  	LD B, 4
+   94 00:9E32 3E FF -  -  	LD A, $FF
+   95 00:9E34 -  -  -  -  FirstLine:
+   96 00:9E34 77 -  -  -  	LD (HL), A
+   97 00:9E35 23 -  -  -  	INC HL
+   98 00:9E36 CD 5B A3 -  	CALL LCDDelay
+   99 00:9E39 D3 11 -  -  	OUT ($11), A
+  100 00:9E3B 10 F7 -  -  	DJNZ FirstLine
+  101 00:9E3D -  -  -  -  NewPiece:
+  102 00:9E3D 21 72 98 -  	LD HL, AppBackUpScreen
+  103 00:9E40 D9 -  -  -  	EXX
+  104 00:9E41 -  -  -  -  Random:
+  105 00:9E41 -  -  -  -  	;clear next piece section: (2*12)
+  106 00:9E41 11 89 29 -  	LD DE, $2989
+  107 00:9E44 06 0C -  -  	LD B, 12
+  108 00:9E46 -  -  -  -  RandomClearLoop:
+  109 00:9E46 7A -  -  -  	LD A, D
+  110 00:9E47 CD 5B A3 -  	CALL LCDDelay
+  111 00:9E4A D3 10 -  -  	OUT ($10), A
+  112 00:9E4C 7B -  -  -  	LD A, E
+  113 00:9E4D CD 5B A3 -  	CALL LCDDelay
+  114 00:9E50 D3 10 -  -  	OUT ($10), A
+  115 00:9E52 AF -  -  -  	XOR A
+  116 00:9E53 CD 5B A3 -  	CALL LCDDelay
+  117 00:9E56 D3 11 -  -  	OUT ($11), A
+  118 00:9E58 CD 5B A3 -  	CALL LCDDelay
+  119 00:9E5B D3 11 -  -  	OUT ($11), A
+  120 00:9E5D 1C -  -  -  	INC E
+  121 00:9E5E 10 E6 -  -  	DJNZ RandomClearLoop	
+  122 00:9E60 -  -  -  -  	;done clear
+  123 00:9E60 3A 73 99 -  	LD A, (AppBackUpScreen+257)
+  124 00:9E63 32 72 99 -  	LD (AppBackUpScreen+256), A
+  125 00:9E66 -  -  -  -  RandomNum:
+  126 00:9E66 ED 5F -  -  	LD A, R
+  127 00:9E68 E6 07 -  -  	AND %00000111
+  128 00:9E6A FE 07 -  -  	CP 7
+  129 00:9E6C 28 F8 -  -  	JR Z, RandomNum
+  130 00:9E6E -  -  -  -  	
+  131 00:9E6E -  -  -  -  	;showing next piece:
+  132 00:9E6E 32 73 99 -  	LD (AppBackUpScreen+257), A
+  133 00:9E71 FD CB 22 F6 	SET 6, (IY+Asm_Flag2)
+  134 00:9E75 18 07 -  -  	JR Random2
+  135 00:9E77 -  -  -  -  Random3:
+  136 00:9E77 FD CB 22 B6 	RES 6, (IY+Asm_Flag2)
+  137 00:9E7B 3A 72 99 -  	LD A, (AppBackUpScreen+256)
+  138 00:9E7E -  -  -  -  Random2:	
+  139 00:9E7E 87 -  -  -  	ADD A, A
+  140 00:9E7F 26 00 -  -  	LD H, 0
+  141 00:9E81 6F -  -  -  	LD L, A
+  142 00:9E82 11 7E A3 -  	LD DE, RandomTable
+  143 00:9E85 19 -  -  -  	ADD HL, DE
+  144 00:9E86 5E -  -  -  	LD E, (HL)
+  145 00:9E87 23 -  -  -  	INC HL
+  146 00:9E88 56 -  -  -  	LD D, (HL)
+  147 00:9E89 EB -  -  -  	EX DE, HL
+  148 00:9E8A -  -  -  -  ;	LD HL, Line1Data ;testing
+  149 00:9E8A FD CB 22 76 	BIT 6, (IY+Asm_Flag2)
+  150 00:9E8E 20 05 -  -  	JR NZ, Random4
+  151 00:9E90 11 80 20 -  	LD DE, $2080 ;D is horizontal row, E if vertical
+  152 00:9E93 18 03 -  -  	JR Random5
+  153 00:9E95 -  -  -  -  Random4:
+  154 00:9E95 11 89 29 -  	LD DE, $2989
+  155 00:9E98 -  -  -  -  Random5:
+  156 00:9E98 0E 01 -  -  	LD C, 1 ;C is shift
+  157 00:9E9A -  -  -  -  Display:
+  158 00:9E9A D9 -  -  -  	EXX
+  159 00:9E9B -  -  -  -  DisplayEXX:
+  160 00:9E9B E5 -  -  -  	PUSH HL
+  161 00:9E9C D9 -  -  -  	EXX
+  162 00:9E9D E5 -  -  -  	PUSH HL
+  163 00:9E9E D5 -  -  -  	PUSH DE
+  164 00:9E9F -  -  -  -  CarryFlag:
+  165 00:9E9F FD CB 21 BE 	RES 7, (IY+Asm_Flag1)
+  166 00:9EA3 7E -  -  -  	LD A, (HL) ;Display piece
+  167 00:9EA4 D9 -  -  -  	EXX
+  168 00:9EA5 47 -  -  -  	LD B, A
+  169 00:9EA6 D9 -  -  -  	EXX
+  170 00:9EA7 23 -  -  -  	INC HL
+  171 00:9EA8 46 -  -  -  	LD B, (HL)
+  172 00:9EA9 23 -  -  -  	INC HL
+  173 00:9EAA 79 -  -  -  	LD A, C
+  174 00:9EAB 86 -  -  -  	ADD A, (HL)
+  175 00:9EAC FE 09 -  -  	CP 9
+  176 00:9EAE 38 04 -  -  	JR C, NoCarry
+  177 00:9EB0 FD CB 21 FE 	SET 7, (IY+Asm_Flag1)
+  178 00:9EB4 -  -  -  -  NoCarry:
+  179 00:9EB4 FD CB 21 46 	BIT 0, (IY+Asm_Flag1)
+  180 00:9EB8 28 07 -  -  	JR Z, NoCarry1
+  181 00:9EBA 2B -  -  -  	DEC HL
+  182 00:9EBB 2B -  -  -  	DEC HL
+  183 00:9EBC FD CB 21 86 	RES 0, (IY+Asm_Flag1)
+  184 00:9EC0 C9 -  -  -  	RET
+  185 00:9EC1 -  -  -  -  NoCarry1:
+  186 00:9EC1 23 -  -  -  	INC HL
+  187 00:9EC2 5E -  -  -  	LD E, (HL)
+  188 00:9EC3 23 -  -  -  	INC HL
+  189 00:9EC4 56 -  -  -  	LD D, (HL)
+  190 00:9EC5 EB -  -  -  	EX DE, HL
+  191 00:9EC6 -  -  -  -  	;HL is pointer to sprite data, B is  width%8+1 (don't change), A' is width%8 (changes)
+  192 00:9EC6 -  -  -  -  	;B' is height, C is shift, HL' is pointer to screen copy stuff
+  193 00:9EC6 D1 -  -  -  	POP DE
+  194 00:9EC7 D5 -  -  -  	PUSH DE
+  195 00:9EC8 -  -  -  -  NextLine2:
+  196 00:9EC8 7B -  -  -  	LD A, E
+  197 00:9EC9 -  -  -  -  ;	CP $80
+  198 00:9EC9 -  -  -  -  ;	JP C, OffScreen
+  199 00:9EC9 FD CB 21 76 	BIT 6, (IY+Asm_Flag1)
+  200 00:9ECD 20 11 -  -  	JR NZ, SkipDisp1
+  201 00:9ECF FD CB 21 4E 	BIT 1, (IY+Asm_Flag1)
+  202 00:9ED3 20 0B -  -  	JR NZ, SkipDisp1
+  203 00:9ED5 CD 5B A3 -  	CALL LCDDelay
+  204 00:9ED8 D3 10 -  -  	OUT ($10), A
+  205 00:9EDA 7A -  -  -  	LD A, D
+  206 00:9EDB CD 5B A3 -  	CALL LCDDelay
+  207 00:9EDE D3 10 -  -  	OUT ($10), A ;done setting coordinates
+  208 00:9EE0 -  -  -  -  SkipDisp1:
+  209 00:9EE0 1E 00 -  -  	LD E, 0
+  210 00:9EE2 78 -  -  -  	LD A, B
+  211 00:9EE3 08 -  -  -  	EX AF, AF' ;'
+  212 00:9EE4 -  -  -  -  Next8Pixels:
+  213 00:9EE4 56 -  -  -  	LD D, (HL)
+  214 00:9EE5 79 -  -  -  	LD A, C
+  215 00:9EE6 FE 00 -  -  	CP 0
+  216 00:9EE8 28 0D -  -  	JR Z, DoneShift
+  217 00:9EEA -  -  -  -  ShiftLoop:
+  218 00:9EEA CB 3A -  -  	SRL D
+  219 00:9EEC CB 43 -  -  	BIT 0, E
+  220 00:9EEE 28 02 -  -  	JR Z, Zero
+  221 00:9EF0 CB FA -  -  	SET 7, D
+  222 00:9EF2 -  -  -  -  Zero:
+  223 00:9EF2 CB 1B -  -  	RR E
+  224 00:9EF4 3D -  -  -  	DEC A
+  225 00:9EF5 20 F3 -  -  	JR NZ, ShiftLoop
+  226 00:9EF7 -  -  -  -  DoneShift:
+  227 00:9EF7 7A -  -  -  	LD A, D
+  228 00:9EF8 D9 -  -  -  	EXX
+  229 00:9EF9 FD CB 21 4E 	BIT 1, (IY+Asm_Flag1)
+  230 00:9EFD 28 14 -  -  	JR Z, SkipDisp10
+  231 00:9EFF A6 -  -  -  	AND (HL)
+  232 00:9F00 CA 0F 9F -  	JP Z, CheckOk1
+  233 00:9F03 D9 -  -  -  	EXX
+  234 00:9F04 D1 -  -  -  	POP DE
+  235 00:9F05 E1 -  -  -  	POP HL
+  236 00:9F06 D9 -  -  -  	EXX
+  237 00:9F07 E1 -  -  -  	POP HL
+  238 00:9F08 D9 -  -  -  	EXX
+  239 00:9F09 37 -  -  -  	SCF
+  240 00:9F0A FD CB 21 8E 	RES 1, (IY+Asm_Flag1)
+  241 00:9F0E C9 -  -  -  	RET
+  242 00:9F0F -  -  -  -  CheckOk1:
+  243 00:9F0F 23 -  -  -  	INC HL
+  244 00:9F10 D9 -  -  -  	EXX
+  245 00:9F11 18 19 -  -  	JR SkipDisp3
+  246 00:9F13 -  -  -  -  SkipDisp10:
+  247 00:9F13 FD CB 22 76 	BIT 6, (IY+Asm_Flag2)
+  248 00:9F17 20 01 -  -  	JR NZ, RandomDisp0
+  249 00:9F19 B6 -  -  -  	OR (HL)
+  250 00:9F1A -  -  -  -  RandomDisp0:
+  251 00:9F1A FD CB 21 76 	BIT 6, (IY+Asm_Flag1)
+  252 00:9F1E 28 05 -  -  	JR Z, SkipDisp2
+  253 00:9F20 77 -  -  -  	LD (HL), A
+  254 00:9F21 23 -  -  -  	INC HL
+  255 00:9F22 D9 -  -  -  	EXX
+  256 00:9F23 18 07 -  -  	JR SkipDisp3
+  257 00:9F25 -  -  -  -  SkipDisp2:
+  258 00:9F25 23 -  -  -  	INC HL
+  259 00:9F26 D9 -  -  -  	EXX
+  260 00:9F27 CD 5B A3 -  	CALL LCDDelay
+  261 00:9F2A D3 11 -  -  	OUT ($11), A
+  262 00:9F2C -  -  -  -  SkipDisp3:
+  263 00:9F2C 23 -  -  -  	INC HL
+  264 00:9F2D 08 -  -  -  	EX AF, AF'
+  265 00:9F2E 3D -  -  -  	DEC A
+  266 00:9F2F 28 0B -  -  	JR Z, Done8Pixels
+  267 00:9F31 08 -  -  -  	EX AF, AF'
+  268 00:9F32 3E 08 -  -  	LD A, 8
+  269 00:9F34 91 -  -  -  	SUB C
+  270 00:9F35 -  -  -  -  ShiftOther:
+  271 00:9F35 CB 3B -  -  	SRL E
+  272 00:9F37 3D -  -  -  	DEC A
+  273 00:9F38 20 FB -  -  	JR NZ, ShiftOther	
+  274 00:9F3A 18 A8 -  -  	JR Next8Pixels
+  275 00:9F3C -  -  -  -  Done8Pixels:
+  276 00:9F3C FD CB 21 7E 	BIT 7, (IY+Asm_Flag1)
+  277 00:9F40 28 32 -  -  	JR Z, OnScreen
+  278 00:9F42 7B -  -  -  	LD A, E
+  279 00:9F43 D9 -  -  -  	EXX
+  280 00:9F44 FD CB 21 4E 	BIT 1, (IY+Asm_Flag1)
+  281 00:9F48 28 13 -  -  	JR Z, SkipDisp11
+  282 00:9F4A A6 -  -  -  	AND (HL)
+  283 00:9F4B CA 5A 9F -  	JP Z, CheckOk0
+  284 00:9F4E D9 -  -  -  	EXX
+  285 00:9F4F D1 -  -  -  	POP DE
+  286 00:9F50 E1 -  -  -  	POP HL
+  287 00:9F51 D9 -  -  -  	EXX
+  288 00:9F52 E1 -  -  -  	POP HL
+  289 00:9F53 D9 -  -  -  	EXX
+  290 00:9F54 37 -  -  -  	SCF
+  291 00:9F55 FD CB 21 8E 	RES 1, (IY+Asm_Flag1)
+  292 00:9F59 C9 -  -  -  	RET
+  293 00:9F5A -  -  -  -  CheckOk0:
+  294 00:9F5A D9 -  -  -  	EXX
+  295 00:9F5B 18 17 -  -  	JR OnScreen
+  296 00:9F5D -  -  -  -  SkipDisp11:
+  297 00:9F5D FD CB 22 76 	BIT 6, (IY+Asm_Flag2)
+  298 00:9F61 20 01 -  -  	JR NZ, RandomDisp1
+  299 00:9F63 B6 -  -  -  	OR (HL)
+  300 00:9F64 -  -  -  -  RandomDisp1:
+  301 00:9F64 FD CB 21 76 	BIT 6, (IY+Asm_Flag1)
+  302 00:9F68 28 04 -  -  	JR Z, SkipDisp4
+  303 00:9F6A 77 -  -  -  	LD (HL), A
+  304 00:9F6B D9 -  -  -  	EXX
+  305 00:9F6C 18 06 -  -  	JR OnScreen
+  306 00:9F6E -  -  -  -  SkipDisp4:
+  307 00:9F6E D9 -  -  -  	EXX
+  308 00:9F6F CD 5B A3 -  	CALL LCDDelay
+  309 00:9F72 D3 11 -  -  	OUT ($11), A
+  310 00:9F74 -  -  -  -  	; JR OnScreen
+  311 00:9F74 -  -  -  -  ; OffScreen:
+  312 00:9F74 -  -  -  -  	; LD A, B
+  313 00:9F74 -  -  -  -  ; OffScreen1:
+  314 00:9F74 -  -  -  -  	; INC HL
+  315 00:9F74 -  -  -  -  	; EXX
+  316 00:9F74 -  -  -  -  	; INC HL
+  317 00:9F74 -  -  -  -  	; EXX
+  318 00:9F74 -  -  -  -  	; DJNZ OffScreen1
+  319 00:9F74 -  -  -  -  	; LD B, A
+  320 00:9F74 -  -  -  -  OnScreen:
+  321 00:9F74 3E 04 -  -  	LD A, 4 ;next row:
+  322 00:9F76 90 -  -  -  	SUB B
+  323 00:9F77 47 -  -  -  	LD B, A
+  324 00:9F78 -  -  -  -  NextLine1:
+  325 00:9F78 D9 -  -  -  	EXX
+  326 00:9F79 23 -  -  -  	INC HL
+  327 00:9F7A D9 -  -  -  	EXX
+  328 00:9F7B 10 FB -  -  	DJNZ NextLine1
+  329 00:9F7D -  -  -  -  	
+  330 00:9F7D C6 FB -  -  	ADD A, ~4
+  331 00:9F7F 2F -  -  -  	CPL
+  332 00:9F80 47 -  -  -  	LD B, A
+  333 00:9F81 D1 -  -  -  	POP DE
+  334 00:9F82 FD CB 21 4E 	BIT 1, (IY+Asm_Flag1)
+  335 00:9F86 20 01 -  -  	JR NZ, SkipDisp13
+  336 00:9F88 1C -  -  -  	INC E
+  337 00:9F89 -  -  -  -  SkipDisp13:
+  338 00:9F89 D5 -  -  -  	PUSH DE	
+  339 00:9F8A D9 -  -  -  	EXX
+  340 00:9F8B 10 02 -  -  	DJNZ ExtraRange
+  341 00:9F8D 18 04 -  -  	JR SkipExtraRange
+  342 00:9F8F -  -  -  -  ExtraRange:
+  343 00:9F8F D9 -  -  -  	EXX
+  344 00:9F90 C3 C8 9E -  	JP NextLine2
+  345 00:9F93 -  -  -  -  SkipExtraRange:
+  346 00:9F93 D9 -  -  -  	EXX
+  347 00:9F94 D1 -  -  -  	POP DE
+  348 00:9F95 E1 -  -  -  	POP HL
+  349 00:9F96 FD CB 21 76 	BIT 6, (IY+Asm_Flag1)
+  350 00:9F9A CA 62 A0 -  	JP Z, SkipDisp5
+  351 00:9F9D FD CB 21 B6 	RES 6, (IY+Asm_Flag1)
+  352 00:9FA1 D9 -  -  -  	EXX
+  353 00:9FA2 E1 -  -  -  	POP HL
+  354 00:9FA3 D9 -  -  -  	EXX
+  355 00:9FA4 -  -  -  -  	;clear lines
+  356 00:9FA4 4E -  -  -  	LD C, (HL) ;find a better way to divide by 3?
+  357 00:9FA5 AF -  -  -  	XOR A
+  358 00:9FA6 47 -  -  -  	LD B, A
+  359 00:9FA7 -  -  -  -  DivisionLoop:
+  360 00:9FA7 C6 03 -  -  	ADD A, 3
+  361 00:9FA9 04 -  -  -  	INC B
+  362 00:9FAA B9 -  -  -  	CP C
+  363 00:9FAB 20 FA -  -  	JR NZ, DivisionLoop
+  364 00:9FAD 7A -  -  -  	LD A, D
+  365 00:9FAE D6 20 -  -  	SUB $20
+  366 00:9FB0 D9 -  -  -  	EXX
+  367 00:9FB1 16 00 -  -  	LD D, 0
+  368 00:9FB3 5F -  -  -  	LD E, A
+  369 00:9FB4 B7 -  -  -  	OR A
+  370 00:9FB5 ED 52 -  -  	SBC HL, DE
+  371 00:9FB7 3E FF -  -  	LD A, $FF
+  372 00:9FB9 11 0C 00 -  	LD DE, 12
+  373 00:9FBC D9 -  -  -  	EXX
+  374 00:9FBD -  -  -  -  FinalCheck1:
+  375 00:9FBD D9 -  -  -  	EXX
+  376 00:9FBE E5 -  -  -  	PUSH HL
+  377 00:9FBF 06 04 -  -  	LD B, 4 ;change if width changes!!
+  378 00:9FC1 -  -  -  -  FinalCheck0:
+  379 00:9FC1 BE -  -  -  	CP (HL)
+  380 00:9FC2 20 68 -  -  	JR NZ, FinalCheckFailed0
+  381 00:9FC4 23 -  -  -  	INC HL
+  382 00:9FC5 10 FA -  -  	DJNZ FinalCheck0
+  383 00:9FC7 3A 74 99 -  	LD A, (AppBackUpScreen+258)
+  384 00:9FCA 3C -  -  -  	INC A
+  385 00:9FCB FE 0A -  -  	CP 10
+  386 00:9FCD 20 3B -  -  	JR NZ, NoNewLevel
+  387 00:9FCF -  -  -  -  	;next level
+  388 00:9FCF 3A 75 99 -  	LD A, (AppBackUpScreen+259)
+  389 00:9FD2 3C -  -  -  	INC A
+  390 00:9FD3 32 75 99 -  	LD (AppBackUpScreen+259), A
+  391 00:9FD6 D5 -  -  -  	PUSH DE	;displaying level:
+  392 00:9FD7 E5 -  -  -  	PUSH HL
+  393 00:9FD8 FE 0A -  -  	CP 10
+  394 00:9FDA 38 19 -  -  	JR C, SecondDigit
+  395 00:9FDC F5 -  -  -  	PUSH AF
+  396 00:9FDD -  -  -  -  LevelDisplaySub:
+  397 00:9FDD D6 0A -  -  	SUB 10
+  398 00:9FDF 30 FC -  -  	JR NC, LevelDisplaySub
+  399 00:9FE1 C6 0A -  -  	ADD A, 10
+  400 00:9FE3 47 -  -  -  	LD B, A
+  401 00:9FE4 C5 -  -  -  	PUSH BC
+  402 00:9FE5 C6 30 -  -  	ADD A, $30
+  403 00:9FE7 EF -  -  -  	RST 28h
+  404 00:9FE8 5E 45 -  -  	.dw _VPutMap
+  405 00:9FEA C1 -  -  -  	POP BC
+  406 00:9FEB F1 -  -  -  	POP AF
+  407 00:9FEC 90 -  -  -  	SUB B
+  408 00:9FED 06 FF -  -  	LD B, $FF
+  409 00:9FEF -  -  -  -  LevelDisplaySub1:
+  410 00:9FEF D6 0A -  -  	SUB 10
+  411 00:9FF1 04 -  -  -  	INC B
+  412 00:9FF2 30 FB -  -  	JR NC, LevelDisplaySub1
+  413 00:9FF4 78 -  -  -  	LD A, B
+  414 00:9FF5 -  -  -  -  SecondDigit:
+  415 00:9FF5 C6 30 -  -  	ADD A, $30
+  416 00:9FF7 21 38 1F -  	LD HL, $1F38 ;(?)
+  417 00:9FFA 22 D7 86 -      LD (PenCol), HL
+  418 00:9FFD EF -  -  -  	RST 28h
+  419 00:9FFE 5E 45 -  -  	.dw _VPutMap
+  420 00:A000 3E 07 -  -  	LD A, 7
+  421 00:A002 CD 5B A3 -  	CALL LCDDelay
+  422 00:A005 D3 10 -  -  	OUT ($10), A
+  423 00:A007 E1 -  -  -  	POP HL
+  424 00:A008 D1 -  -  -  	POP DE
+  425 00:A009 AF -  -  -  	XOR A
+  426 00:A00A -  -  -  -  NoNewLevel:
+  427 00:A00A 32 74 99 -  	LD (AppBackUpScreen+258), A
+  428 00:A00D 3E FF -  -  	LD A, $FF
+  429 00:A00F -  -  -  -  	;moving down a line
+  430 00:A00F FD CB 21 C6 	SET 0, (IY+Asm_Flag1)
+  431 00:A013 E1 -  -  -  	POP HL
+  432 00:A014 E5 -  -  -  	PUSH HL
+  433 00:A015 2B -  -  -  	DEC HL
+  434 00:A016 -  -  -  -  ;	LD DE, 36
+  435 00:A016 -  -  -  -  ;	ADD HL, DE
+  436 00:A016 11 72 98 -  	LD DE, $9872
+  437 00:A019 B7 -  -  -  	OR A
+  438 00:A01A ED 52 -  -  	SBC HL, DE
+  439 00:A01C 44 -  -  -  	LD B, H
+  440 00:A01D 4D -  -  -  	LD C, L
+  441 00:A01E E1 -  -  -  	POP HL
+  442 00:A01F E5 -  -  -  	PUSH HL
+  443 00:A020 2B -  -  -  	DEC HL
+  444 00:A021 -  -  -  -  ;	LD DE, 36
+  445 00:A021 -  -  -  -  ;	ADD HL, DE
+  446 00:A021 11 0C 00 -  	LD DE, 12
+  447 00:A024 EB -  -  -  	EX DE, HL
+  448 00:A025 19 -  -  -  	ADD HL, DE
+  449 00:A026 EB -  -  -  	EX DE, HL
+  450 00:A027 ED B8 -  -  	LDDR
+  451 00:A029 11 0C 00 -  	LD DE, 12
+  452 00:A02C -  -  -  -  	;move down
+  453 00:A02C -  -  -  -  FinalCheckFailed0
+  454 00:A02C E1 -  -  -  	POP HL
+  455 00:A02D -  -  -  -  
+  456 00:A02D 19 -  -  -  	ADD HL, DE
+  457 00:A02E D9 -  -  -  	EXX
+  458 00:A02F 10 8C -  -  	DJNZ FinalCheck1
+  459 00:A031 FD CB 21 46 	BIT 0, (IY+Asm_Flag1)
+  460 00:A035 CA 3D 9E -  	JP Z, NewPiece
+  461 00:A038 FD CB 21 86 	RES 0, (IY+Asm_Flag1) ;display again
+  462 00:A03C 21 72 98 -  	LD HL, AppBackUpScreen
+  463 00:A03F 16 80 -  -  	LD D, $80
+  464 00:A041 7A -  -  -  	LD A, D
+  465 00:A042 -  -  -  -  ClearLCDLoop0:
+  466 00:A042 14 -  -  -  	INC D
+  467 00:A043 CD 5B A3 -  	CALL LCDDelay
+  468 00:A046 D3 10 -  -  	OUT ($10), A
+  469 00:A048 3E 20 -  -  	LD A, $20
+  470 00:A04A CD 5B A3 -  	CALL LCDDelay
+  471 00:A04D D3 10 -  -  	OUT ($10), A
+  472 00:A04F 06 04 -  -  	LD B, 4
+  473 00:A051 -  -  -  -  ClearLCDLoop1:
+  474 00:A051 7E -  -  -  	LD A, (HL)
+  475 00:A052 CD 5B A3 -  	CALL LCDDelay
+  476 00:A055 D3 11 -  -  	OUT ($11), A
+  477 00:A057 23 -  -  -  	INC HL
+  478 00:A058 10 F7 -  -  	DJNZ ClearLCDLoop1
+  479 00:A05A 7A -  -  -  	LD A, D
+  480 00:A05B FE C0 -  -  	CP $C0
+  481 00:A05D 20 E3 -  -  	JR NZ, ClearLCDLoop0
+  482 00:A05F C3 3D 9E -  	JP NewPiece
+  483 00:A062 -  -  -  -  SkipDisp5:
+  484 00:A062 FD CB 21 4E 	BIT 1, (IY+Asm_Flag1)
+  485 00:A066 28 09 -  -  	JR Z, SkipDisp12
+  486 00:A068 D9 -  -  -  	EXX
+  487 00:A069 E1 -  -  -  	POP HL
+  488 00:A06A D9 -  -  -  	EXX
+  489 00:A06B FD CB 21 8E 	RES 1, (IY+Asm_Flag1)
+  490 00:A06F -  -  -  -  ;	SET 0, (IY+Asm_Flag1)
+  491 00:A06F B7 -  -  -  	OR A
+  492 00:A070 C9 -  -  -  	RET
+  493 00:A071 -  -  -  -  SkipDisp12:
+  494 00:A071 7B -  -  -  	LD A, E ;reseting E and HL'
+  495 00:A072 96 -  -  -  	SUB (HL)
+  496 00:A073 5F -  -  -  	LD E, A 
+  497 00:A074 D9 -  -  -  	EXX
+  498 00:A075 E1 -  -  -  	POP HL
+  499 00:A076 D9 -  -  -  	EXX
+  500 00:A077 FD CB 22 7E 	BIT 7, (IY+Asm_Flag2)
+  501 00:A07B C2 C6 A2 -  	JP NZ, DownNeedNewPiece
+  502 00:A07E FD CB 22 76 	BIT 6, (IY+Asm_Flag2)
+  503 00:A082 C2 77 9E -  	JP NZ, Random3
+  504 00:A085 -  -  -  -  	;end display. HL is pointer to pieces data, DE and C are coordinates
+  505 00:A085 -  -  -  -  	;HL' points to the piece.
+  506 00:A085 FD CB 21 AE 	RES 5, (IY+Asm_Flag1)
+  507 00:A089 -  -  -  -  ;some delay here...
+  508 00:A089 06 FF -  -  	LD B, $FF
+  509 00:A08B -  -  -  -  KeyDelayLoop:
+  510 00:A08B EF -  -  -  	rst 28h
+  511 00:A08C 51 40 -  -  	.dw _LCD_BUSY
+  512 00:A08E EF -  -  -  	rst 28h
+  513 00:A08F 51 40 -  -  	.dw _LCD_BUSY
+  514 00:A091 10 F8 -  -  	DJNZ KeyDelayLoop
+  515 00:A093 FD CB 21 9E 	RES 3, (IY+Asm_Flag1)
+  516 00:A097 FD CB 21 96 	RES 2, (IY+Asm_Flag1)	
+  517 00:A09B -  -  -  -  Key:
+  518 00:A09B 3E FD -  -  	LD A, $FD
+  519 00:A09D D3 01 -  -  	OUT (1), A
+  520 00:A09F DB 01 -  -  	IN A, (1)
+  521 00:A0A1 FE BF -  -  	CP $BF
+  522 00:A0A3 20 19 -  -  	JR NZ, NotClearKey
+  523 00:A0A5 06 FF -  -  	LD B, $FF
+  524 00:A0A7 -  -  -  -  KeyDelayLoop1:
+  525 00:A0A7 EF -  -  -  	rst 28h
+  526 00:A0A8 51 40 -  -  	.dw _LCD_BUSY
+  527 00:A0AA EF -  -  -  	rst 28h
+  528 00:A0AB 51 40 -  -  	.dw _LCD_BUSY
+  529 00:A0AD 10 F8 -  -  	DJNZ KeyDelayLoop1	
+  530 00:A0AF 3E FD -  -  	LD A, $FD
+  531 00:A0B1 D3 01 -  -  	OUT (1), A
+  532 00:A0B3 -  -  -  -  PauseLoop:
+  533 00:A0B3 DB 04 -  -  	IN A, (4)
+  534 00:A0B5 CB 47 -  -  	BIT 0, A
+  535 00:A0B7 C0 -  -  -  	RET NZ
+  536 00:A0B8 DB 01 -  -  	IN A, (1)
+  537 00:A0BA FE BF -  -  	CP $BF
+  538 00:A0BC 20 F5 -  -  	JR NZ, PauseLoop
+  539 00:A0BE -  -  -  -  NotClearKey:
+  540 00:A0BE 3E EF -  -  	LD A, $EF
+  541 00:A0C0 D3 01 -  -  	OUT (1), A
+  542 00:A0C2 DB 01 -  -  	IN A, (1)
+  543 00:A0C4 FE D0 -  -  	CP $D0 ;0 1 4 7 sin(
+  544 00:A0C6 20 05 -  -  	JR NZ, NotCheatKey
+  545 00:A0C8 3E 09 -  -  	LD A, 9
+  546 00:A0CA 32 74 99 -  	LD (AppBackUpScreen+258), A
+  547 00:A0CD -  -  -  -  NotCheatKey:
+  548 00:A0CD 3E FF -  -  	LD A, $FF
+  549 00:A0CF D3 01 -  -  	OUT (1), A
+  550 00:A0D1 00 -  -  -  	NOP 
+  551 00:A0D2 00 -  -  -  	NOP
+  552 00:A0D3 00 -  -  -  	NOP
+  553 00:A0D4 3E FE -  -  	LD A, ArrowKeys
+  554 00:A0D6 D3 01 -  -  	OUT (1), A
+  555 00:A0D8 DB 01 -  -  	IN A, (1)
+  556 00:A0DA FE FB -  -  	CP RightKey
+  557 00:A0DC C2 60 A1 -  	JP NZ, NotRightKey
+  558 00:A0DF 79 -  -  -  	LD A, C ;move right
+  559 00:A0E0 C6 03 -  -  	ADD A, 3
+  560 00:A0E2 4F -  -  -  	LD C, A
+  561 00:A0E3 D6 08 -  -  	SUB 8
+  562 00:A0E5 38 05 -  -  	JR C, RightFine
+  563 00:A0E7 4F -  -  -  	LD C, A
+  564 00:A0E8 14 -  -  -  	INC D
+  565 00:A0E9 D9 -  -  -  	EXX
+  566 00:A0EA 23 -  -  -  	INC HL
+  567 00:A0EB D9 -  -  -  	EXX
+  568 00:A0EC -  -  -  -  RightFine:
+  569 00:A0EC FD CB 21 CE 	SET 1, (IY+Asm_Flag1)
+  570 00:A0F0 CD 9A 9E -  	CALL Display
+  571 00:A0F3 30 17 -  -  	JR NC, CanMoveRight
+  572 00:A0F5 79 -  -  -  	LD A, C
+  573 00:A0F6 D6 03 -  -  	SUB 3
+  574 00:A0F8 4F -  -  -  	LD C, A
+  575 00:A0F9 30 07 -  -  	JR NC, NoRightFine
+  576 00:A0FB C6 08 -  -  	ADD A, 8
+  577 00:A0FD 4F -  -  -  	LD C, A
+  578 00:A0FE 15 -  -  -  	DEC D
+  579 00:A0FF D9 -  -  -  	EXX
+  580 00:A100 2B -  -  -  	DEC HL
+  581 00:A101 D9 -  -  -  	EXX
+  582 00:A102 -  -  -  -  NoRightFine:
+  583 00:A102 FD CB 21 C6 	SET 0, (IY+Asm_Flag1)
+  584 00:A106 CD 9F 9E -  	CALL CarryFlag
+  585 00:A109 C3 6B A2 -  	JP DoneKey
+  586 00:A10C -  -  -  -  CanMoveRight:
+  587 00:A10C FD CB 21 EE 	SET 5, (IY+Asm_Flag1) 
+  588 00:A110 FD CB 21 E6 	SET 4, (IY+Asm_Flag1)
+  589 00:A114 79 -  -  -  	LD A, C
+  590 00:A115 FE 03 -  -  	CP 3
+  591 00:A117 D2 6B A2 -  	JP NC, DoneKey
+  592 00:A11A 15 -  -  -  	DEC D
+  593 00:A11B FD CB 21 DE 	SET 3, (IY+Asm_Flag1)
+  594 00:A11F D9 -  -  -  	EXX
+  595 00:A120 -  -  -  -  ;	INC HL
+  596 00:A120 E5 -  -  -  	PUSH HL
+  597 00:A121 2B -  -  -  	DEC HL
+  598 00:A122 D9 -  -  -  	EXX
+  599 00:A123 4F -  -  -  	LD C, A
+  600 00:A124 -  -  -  -  KeyMove:
+  601 00:A124 3E 05 -  -  	LD A, 5
+  602 00:A126 CD 5B A3 -  	CALL LCDDelay
+  603 00:A129 D3 10 -  -  	OUT ($10), A
+  604 00:A12B 7A -  -  -  	LD A, D
+  605 00:A12C CD 5B A3 -  	CALL LCDDelay
+  606 00:A12F D3 10 -  -  	OUT ($10), A
+  607 00:A131 7B -  -  -  	LD A, E
+  608 00:A132 CD 5B A3 -  	CALL LCDDelay
+  609 00:A135 D3 10 -  -  	OUT ($10), A
+  610 00:A137 7E -  -  -  	LD A, (HL)
+  611 00:A138 D9 -  -  -  	EXX
+  612 00:A139 11 04 00 -  	LD DE, 4
+  613 00:A13C -  -  -  -  ;	PUSH HL
+  614 00:A13C 47 -  -  -  	LD B, A
+  615 00:A13D -  -  -  -  RightKeyClear:
+  616 00:A13D 7E -  -  -  	LD A, (HL)
+  617 00:A13E CD 5B A3 -  	CALL LCDDelay
+  618 00:A141 D3 11 -  -  	OUT ($11), A
+  619 00:A143 19 -  -  -  	ADD HL, DE
+  620 00:A144 10 F7 -  -  	DJNZ RightKeyClear
+  621 00:A146 E1 -  -  -  	POP HL
+  622 00:A147 D9 -  -  -  	EXX
+  623 00:A148 FD CB 21 66 	BIT 4, (IY+Asm_Flag1)
+  624 00:A14C 28 07 -  -  	JR Z, MoveLeft
+  625 00:A14E 14 -  -  -  	INC D
+  626 00:A14F FD CB 21 A6 	RES 4, (IY+Asm_Flag1)
+  627 00:A153 18 01 -  -  	JR MoveRight
+  628 00:A155 -  -  -  -  MoveLeft:
+  629 00:A155 D1 -  -  -  	POP DE
+  630 00:A156 -  -  -  -  MoveRight:
+  631 00:A156 3E 07 -  -  	LD A, 7
+  632 00:A158 CD 5B A3 -  	CALL LCDDelay
+  633 00:A15B D3 10 -  -  	OUT ($10), A
+  634 00:A15D C3 6B A2 -  	JP DoneKey
+  635 00:A160 -  -  -  -  NotRightKey:
+  636 00:A160 FE FD -  -  	CP LeftKey
+  637 00:A162 C2 F6 A1 -  	JP NZ, NotLeftKey
+  638 00:A165 FD CB 21 A6 	RES 4, (IY+Asm_Flag1)
+  639 00:A169 79 -  -  -  	LD A, C ;move left
+  640 00:A16A D6 03 -  -  	SUB 3
+  641 00:A16C 4F -  -  -  	LD C, A
+  642 00:A16D 30 07 -  -  	JR NC, LeftFine
+  643 00:A16F C6 08 -  -  	ADD A, 8
+  644 00:A171 4F -  -  -  	LD C, A
+  645 00:A172 15 -  -  -  	DEC D
+  646 00:A173 D9 -  -  -  	EXX
+  647 00:A174 2B -  -  -  	DEC HL
+  648 00:A175 D9 -  -  -  	EXX
+  649 00:A176 -  -  -  -  LeftFine:
+  650 00:A176 FD CB 21 CE 	SET 1, (IY+Asm_Flag1)
+  651 00:A17A CD 9A 9E -  	CALL Display
+  652 00:A17D 38 04 -  -  	JR C, LeftOther
+  653 00:A17F FD CB 21 E6 	SET 4, (IY+Asm_Flag1)
+  654 00:A183 -  -  -  -  LeftOther:
+  655 00:A183 -  -  -  -  ;	JR NC, CanMoveLeft
+  656 00:A183 79 -  -  -  	LD A, C
+  657 00:A184 C6 03 -  -  	ADD A, 3
+  658 00:A186 4F -  -  -  	LD C, A
+  659 00:A187 D6 08 -  -  	SUB 8
+  660 00:A189 38 05 -  -  	JR C, NoLeftFine
+  661 00:A18B 4F -  -  -  		LD C, A
+  662 00:A18C 14 -  -  -  	INC D
+  663 00:A18D D9 -  -  -  	EXX
+  664 00:A18E 23 -  -  -  	INC HL
+  665 00:A18F D9 -  -  -  	EXX
+  666 00:A190 -  -  -  -  NoLeftFine:
+  667 00:A190 FD CB 21 C6 	SET 0, (IY+Asm_Flag1)
+  668 00:A194 CD 9F 9E -  	CALL CarryFlag
+  669 00:A197 FD CB 21 66 	BIT 4, (IY+Asm_Flag1)
+  670 00:A19B CA 6B A2 -  	JP Z, DoneKey
+  671 00:A19E FD CB 21 A6 	RES 4, (IY+Asm_Flag1)
+  672 00:A1A2 -  -  -  -  CanMoveLeft:
+  673 00:A1A2 FD CB 21 EE 	SET 5, (IY+Asm_Flag1) ;move left
+  674 00:A1A6 23 -  -  -  	INC HL
+  675 00:A1A7 23 -  -  -  	INC HL
+  676 00:A1A8 7E -  -  -  	LD A, (HL)
+  677 00:A1A9 2B -  -  -  	DEC HL
+  678 00:A1AA 81 -  -  -  	ADD A, C
+  679 00:A1AB 3D -  -  -  	DEC A
+  680 00:A1AC D6 08 -  -  	SUB 8
+  681 00:A1AE 30 02 -  -  	JR NC, LeftAdd8
+  682 00:A1B0 C6 08 -  -  	ADD A, 8
+  683 00:A1B2 -  -  -  -  LeftAdd8:
+  684 00:A1B2 2B -  -  -  	DEC HL
+  685 00:A1B3 -  -  -  -  	; CP 3
+  686 00:A1B3 -  -  -  -  	; JR C, DoneLeftShiftDiv
+  687 00:A1B3 -  -  -  -  	; SUB 8
+  688 00:A1B3 -  -  -  -  ; DoneLeftShiftDiv:
+  689 00:A1B3 FD CB 21 E6 	SET 4, (IY+Asm_Flag1)
+  690 00:A1B7 FE 03 -  -  	CP 3
+  691 00:A1B9 30 04 -  -  	JR NC, DontEraseLeftShift
+  692 00:A1BB FD CB 21 A6 	RES 4, (IY+Asm_Flag1) ;res if need to erase
+  693 00:A1BF -  -  -  -  DontEraseLeftShift:
+  694 00:A1BF 79 -  -  -  	LD A, C
+  695 00:A1C0 D6 03 -  -  	SUB 3
+  696 00:A1C2 30 0A -  -  	JR NC, NotLeftKey1
+  697 00:A1C4 C6 08 -  -  	ADD A, 8
+  698 00:A1C6 15 -  -  -  	DEC D
+  699 00:A1C7 FD CB 21 D6 	SET 2, (IY+Asm_Flag1)
+  700 00:A1CB D9 -  -  -  	EXX
+  701 00:A1CC 2B -  -  -  	DEC HL
+  702 00:A1CD D9 -  -  -  	EXX
+  703 00:A1CE -  -  -  -  NotLeftKey1:
+  704 00:A1CE 4F -  -  -  	LD C, A
+  705 00:A1CF FD CB 21 66 	BIT 4, (IY+Asm_Flag1)
+  706 00:A1D3 C2 6B A2 -  	JP NZ, DoneKey
+  707 00:A1D6 D5 -  -  -  	PUSH DE
+  708 00:A1D7 23 -  -  -  	INC HL ;moving D for clear
+  709 00:A1D8 7E -  -  -  	LD A, (HL)
+  710 00:A1D9 2B -  -  -  	DEC HL
+  711 00:A1DA 82 -  -  -  	ADD A, D
+  712 00:A1DB 42 -  -  -  	LD B, D
+  713 00:A1DC FD CB 21 7E 	BIT 7, (IY+Asm_Flag1)
+  714 00:A1E0 20 01 -  -  	JR NZ, DontIncLeftKey
+  715 00:A1E2 3D -  -  -  	DEC A
+  716 00:A1E3 -  -  -  -  DontIncLeftKey:
+  717 00:A1E3 57 -  -  -  	LD D, A
+  718 00:A1E4 79 -  -  -  	LD A, C
+  719 00:A1E5 FE 05 -  -  	CP 5
+  720 00:A1E7 38 01 -  -  	JR C, LeftOkay
+  721 00:A1E9 14 -  -  -  	INC D
+  722 00:A1EA -  -  -  -  LeftOkay:
+  723 00:A1EA 7A -  -  -  	LD A, D
+  724 00:A1EB 90 -  -  -  	SUB B
+  725 00:A1EC D9 -  -  -  	EXX
+  726 00:A1ED E5 -  -  -  	PUSH HL
+  727 00:A1EE 47 -  -  -  	LD B, A
+  728 00:A1EF -  -  -  -  ;	INC B
+  729 00:A1EF -  -  -  -  LeftAdjustHL:
+  730 00:A1EF 23 -  -  -  	INC HL
+  731 00:A1F0 10 FD -  -  	DJNZ LeftAdjustHL
+  732 00:A1F2 D9 -  -  -  	EXX
+  733 00:A1F3 C3 24 A1 -  	JP KeyMove	
+  734 00:A1F6 -  -  -  -  NotLeftKey:
+  735 00:A1F6 FE FE -  -  	CP DownKey
+  736 00:A1F8 20 05 -  -  	JR NZ, NotDownKey
+  737 00:A1FA DB 04 -  -  	IN A, (4) ;not sure why this is necessary
+  738 00:A1FC C3 7E A2 -  	JP MoveDown
+  739 00:A1FF -  -  -  -  NotDownKey:
+  740 00:A1FF FE F7 -  -  	CP UpKey
+  741 00:A201 20 68 -  -  	JR NZ, DoneKey
+  742 00:A203 7D -  -  -  	LD A, L
+  743 00:A204 -  -  -  -  ;	CP $6D
+  744 00:A204 -  -  -  -  ;	JR Z, DoneKey
+  745 00:A204 E5 -  -  -  	PUSH HL
+  746 00:A205 D5 -  -  -  	PUSH DE
+  747 00:A206 11 05 00 -  	LD DE, 5
+  748 00:A209 19 -  -  -  	ADD HL, DE
+  749 00:A20A 5E -  -  -  	LD E, (HL)
+  750 00:A20B 23 -  -  -  	INC HL
+  751 00:A20C 56 -  -  -  	LD D, (HL)
+  752 00:A20D EB -  -  -  	EX DE, HL
+  753 00:A20E FD CB 21 CE 	SET 1, (IY+Asm_Flag1)
+  754 00:A212 D1 -  -  -  	POP DE
+  755 00:A213 CD 9A 9E -  	CALL Display
+  756 00:A216 30 0A -  -  	JR NC, DownFine
+  757 00:A218 E1 -  -  -  	POP HL
+  758 00:A219 FD CB 21 C6 	SET 0, (IY+Asm_Flag1)
+  759 00:A21D CD 9F 9E -  	CALL CarryFlag
+  760 00:A220 18 49 -  -  	JR DoneKey
+  761 00:A222 -  -  -  -  DownFine:
+  762 00:A222 E1 -  -  -  	POP HL
+  763 00:A223 FD CB 21 C6 	SET 0, (IY+Asm_Flag1)
+  764 00:A227 CD 9F 9E -  	CALL CarryFlag
+  765 00:A22A FD CB 21 EE 	SET 5, (IY+Asm_Flag1) ;rotate piece
+  766 00:A22E -  -  -  -  	
+  767 00:A22E -  -  -  -  	
+  768 00:A22E -  -  -  -  	
+  769 00:A22E -  -  -  -  	;clear
+  770 00:A22E D5 -  -  -  	PUSH DE
+  771 00:A22F 46 -  -  -  	LD B, (HL)
+  772 00:A230 23 -  -  -  	INC HL
+  773 00:A231 7E -  -  -  	LD A, (HL)
+  774 00:A232 D9 -  -  -  	EXX
+  775 00:A233 E5 -  -  -  	PUSH HL
+  776 00:A234 4F -  -  -  	LD C, A
+  777 00:A235 FD CB 21 7E 	BIT 7, (IY+Asm_Flag1)
+  778 00:A239 28 01 -  -  	JR Z, UpDontAddOne
+  779 00:A23B 0C -  -  -  	INC C
+  780 00:A23C -  -  -  -  UpDontAddOne:
+  781 00:A23C 3E 04 -  -  	LD A, 4
+  782 00:A23E 91 -  -  -  	SUB C
+  783 00:A23F 16 00 -  -  	LD D, 0
+  784 00:A241 5F -  -  -  	LD E, A
+  785 00:A242 D9 -  -  -  	EXX
+  786 00:A243 23 -  -  -  	INC HL
+  787 00:A244 23 -  -  -  	INC HL
+  788 00:A245 23 -  -  -  	INC HL
+  789 00:A246 23 -  -  -  	INC HL
+  790 00:A247 -  -  -  -  UpClearPiece0:
+  791 00:A247 7A -  -  -  	LD A, D
+  792 00:A248 CD 5B A3 -  	CALL LCDDelay
+  793 00:A24B D3 10 -  -  	OUT ($10), A
+  794 00:A24D 7B -  -  -  	LD A, E
+  795 00:A24E CD 5B A3 -  	CALL LCDDelay
+  796 00:A251 D3 10 -  -  	OUT ($10), A
+  797 00:A253 D9 -  -  -  	EXX
+  798 00:A254 41 -  -  -  	LD B, C
+  799 00:A255 -  -  -  -  UpClearPiece1:
+  800 00:A255 7E -  -  -  	LD A, (HL)
+  801 00:A256 23 -  -  -  	INC HL
+  802 00:A257 CD 5B A3 -  	CALL LCDDelay
+  803 00:A25A D3 11 -  -  	OUT ($11), A
+  804 00:A25C 10 F7 -  -  	DJNZ UpClearPiece1
+  805 00:A25E 19 -  -  -  	ADD HL, DE
+  806 00:A25F D9 -  -  -  	EXX
+  807 00:A260 1C -  -  -  	INC E
+  808 00:A261 10 E4 -  -  	DJNZ UpClearPiece0
+  809 00:A263 D9 -  -  -  	EXX
+  810 00:A264 E1 -  -  -  	POP HL
+  811 00:A265 D9 -  -  -  	EXX
+  812 00:A266 5E -  -  -  	LD E, (HL)
+  813 00:A267 23 -  -  -  	INC HL
+  814 00:A268 56 -  -  -  	LD D, (HL)
+  815 00:A269 EB -  -  -  	EX DE, HL	
+  816 00:A26A D1 -  -  -  	POP DE
+  817 00:A26B -  -  -  -  DoneKey:
+  818 00:A26B -  -  -  -  	;end keys. bit 5 is set if needs to be displayed again
+  819 00:A26B -  -  -  -  	
+  820 00:A26B -  -  -  -  	;move down:
+  821 00:A26B -  -  -  -  	;clear above:
+  822 00:A26B DB 04 -  -  	IN A, (4)
+  823 00:A26D CB 47 -  -  	BIT 0, A
+  824 00:A26F C0 -  -  -  	RET NZ
+  825 00:A270 -  -  -  -  ;	JP NZ, EndProgram ;enabling ERR:BREAK
+  826 00:A270 CB 6F -  -  	BIT 5, A
+  827 00:A272 20 0A -  -  	JR NZ, MoveDown
+  828 00:A274 FD CB 21 6E 	BIT 5, (IY+Asm_Flag1)
+  829 00:A278 CA 9B A0 -  	JP Z, Key
+  830 00:A27B C3 9A 9E -  	JP Display
+  831 00:A27E -  -  -  -  MoveDown:	
+  832 00:A27E 3E 46 -  -  	LD A, $46
+  833 00:A280 D3 30 -  -  	OUT ($30), A
+  834 00:A282 3E 00 -  -  	LD A, 0
+  835 00:A284 D3 31 -  -  	OUT ($31), A
+  836 00:A286 3A 75 99 -  	LD A, (AppBackUpScreen+259)
+  837 00:A289 FE 1D -  -  	CP 29
+  838 00:A28B 30 0E -  -  	JR NC, Delay29
+  839 00:A28D E5 -  -  -  	PUSH HL
+  840 00:A28E D5 -  -  -  	PUSH DE
+  841 00:A28F 21 61 A3 -  	LD HL, DelayTable
+  842 00:A292 16 00 -  -  	LD D, 0
+  843 00:A294 5F -  -  -  	LD E, A
+  844 00:A295 19 -  -  -  	ADD HL, DE
+  845 00:A296 7E -  -  -  	LD A, (HL)
+  846 00:A297 D1 -  -  -  	POP DE
+  847 00:A298 E1 -  -  -  	POP HL
+  848 00:A299 18 02 -  -  	JR Delay291
+  849 00:A29B -  -  -  -  Delay29:
+  850 00:A29B 3E 02 -  -  	LD A, 2
+  851 00:A29D -  -  -  -  Delay291:
+  852 00:A29D D3 32 -  -  	OUT ($32), A
+  853 00:A29F -  -  -  -  	
+  854 00:A29F -  -  -  -  	;check:
+  855 00:A29F FD CB 21 CE 	SET 1, (IY+Asm_Flag1)
+  856 00:A2A3 D9 -  -  -  	EXX
+  857 00:A2A4 11 04 00 -  	LD DE, 4
+  858 00:A2A7 19 -  -  -  	ADD HL, DE
+  859 00:A2A8 CD 9B 9E -  	CALL DisplayEXX
+  860 00:A2AB 30 24 -  -  	JR NC, NoNewPiece
+  861 00:A2AD 7B -  -  -  	LD A, E
+  862 00:A2AE FE 81 -  -  	CP $81
+  863 00:A2B0 D8 -  -  -  	RET C
+  864 00:A2B1 D9 -  -  -  	EXX
+  865 00:A2B2 11 04 00 -  	LD DE, 4
+  866 00:A2B5 B7 -  -  -  	OR A
+  867 00:A2B6 ED 52 -  -  	SBC HL, DE
+  868 00:A2B8 D9 -  -  -  	EXX
+  869 00:A2B9 -  -  -  -  ;	JR C, EndProgram
+  870 00:A2B9 FD CB 21 6E 	BIT 5, (IY+Asm_Flag1)
+  871 00:A2BD 28 07 -  -  	JR Z, DownNeedNewPiece
+  872 00:A2BF FD CB 22 FE 	SET 7, (IY+Asm_Flag2)
+  873 00:A2C3 C3 9A 9E -  	JP Display
+  874 00:A2C6 -  -  -  -  DownNeedNewPiece:
+  875 00:A2C6 FD CB 22 BE 	RES 7, (IY+Asm_Flag2)
+  876 00:A2CA FD CB 21 F6 	SET 6, (IY+Asm_Flag1)
+  877 00:A2CE C3 9A 9E -  	JP Display	
+  878 00:A2D1 -  -  -  -  NoNewPiece:
+  879 00:A2D1 D9 -  -  -  	EXX
+  880 00:A2D2 11 04 00 -  	LD DE, 4
+  881 00:A2D5 B7 -  -  -  	OR A
+  882 00:A2D6 ED 52 -  -  	SBC HL, DE
+  883 00:A2D8 D9 -  -  -  	EXX
+  884 00:A2D9 FD CB 21 C6 	SET 0, (IY+Asm_Flag1)
+  885 00:A2DD CD 9F 9E -  	CALL CarryFlag
+  886 00:A2E0 -  -  -  -  	
+  887 00:A2E0 -  -  -  -  	
+  888 00:A2E0 -  -  -  -  	;extra erase:
+  889 00:A2E0 FD CB 21 5E 	BIT 3, (IY+Asm_Flag1)
+  890 00:A2E4 28 32 -  -  	JR Z, DownCheckBit2
+  891 00:A2E6 7A -  -  -  	LD A, D
+  892 00:A2E7 3D -  -  -  	DEC A
+  893 00:A2E8 D9 -  -  -  	EXX
+  894 00:A2E9 E5 -  -  -  	PUSH HL
+  895 00:A2EA 2B -  -  -  	DEC HL
+  896 00:A2EB -  -  -  -  ExtraClear:	
+  897 00:A2EB 11 04 00 -  	LD DE, 4
+  898 00:A2EE CD 5B A3 -  	CALL LCDDelay
+  899 00:A2F1 D3 10 -  -  	OUT ($10), A
+  900 00:A2F3 D9 -  -  -  	EXX
+  901 00:A2F4 7B -  -  -  	LD A, E
+  902 00:A2F5 CD 5B A3 -  	CALL LCDDelay
+  903 00:A2F8 D3 10 -  -  	OUT ($10), A
+  904 00:A2FA D9 -  -  -  	EXX
+  905 00:A2FB 3E 05 -  -  	LD A, 5
+  906 00:A2FD CD 5B A3 -  	CALL LCDDelay
+  907 00:A300 D3 10 -  -  	OUT ($10), A
+  908 00:A302 06 03 -  -  	LD B, 3
+  909 00:A304 -  -  -  -  ExtraClearLoop:
+  910 00:A304 7E -  -  -  	LD A, (HL)
+  911 00:A305 CD 5B A3 -  	CALL LCDDelay
+  912 00:A308 D3 11 -  -  	OUT ($11), A
+  913 00:A30A 19 -  -  -  	ADD HL, DE
+  914 00:A30B 10 F7 -  -  	DJNZ ExtraClearLoop
+  915 00:A30D E1 -  -  -  	POP HL
+  916 00:A30E D9 -  -  -  	EXX
+  917 00:A30F 3E 07 -  -  	LD A, 7
+  918 00:A311 CD 5B A3 -  	CALL LCDDelay
+  919 00:A314 D3 10 -  -  	OUT ($10), A
+  920 00:A316 18 0D -  -  	JR ClearAbove
+  921 00:A318 -  -  -  -  DownCheckBit2:
+  922 00:A318 FD CB 21 56 	BIT 2, (IY+Asm_Flag1)
+  923 00:A31C 28 07 -  -  	JR Z, ClearAbove
+  924 00:A31E 7A -  -  -  	LD A, D
+  925 00:A31F 3C -  -  -  	INC A
+  926 00:A320 D9 -  -  -  	EXX
+  927 00:A321 E5 -  -  -  	PUSH HL
+  928 00:A322 23 -  -  -  	INC HL
+  929 00:A323 18 C6 -  -  	JR ExtraClear
+  930 00:A325 -  -  -  -  ClearAbove:
+  931 00:A325 23 -  -  -  	INC HL ;move down
+  932 00:A326 7E -  -  -  	LD A, (HL)
+  933 00:A327 2B -  -  -  	DEC HL
+  934 00:A328 FD CB 21 7E 	BIT 7, (IY+Asm_Flag1)
+  935 00:A32C 28 01 -  -  	JR Z, DontAddOne
+  936 00:A32E 3C -  -  -  	INC A
+  937 00:A32F -  -  -  -  DontAddOne:
+  938 00:A32F D9 -  -  -  	EXX
+  939 00:A330 4F -  -  -  	LD C, A
+  940 00:A331 16 00 -  -  	LD D, 0
+  941 00:A333 C6 FB -  -  	ADD A, ~4
+  942 00:A335 2F -  -  -  	CPL
+  943 00:A336 5F -  -  -  	LD E, A
+  944 00:A337 D9 -  -  -  	EXX
+  945 00:A338 06 03 -  -  	LD B, 3
+  946 00:A33A -  -  -  -  ClearLoop1:
+  947 00:A33A 7A -  -  -  	LD A, D
+  948 00:A33B CD 5B A3 -  	CALL LCDDelay
+  949 00:A33E D3 10 -  -  	OUT ($10), A
+  950 00:A340 7B -  -  -  	LD A, E
+  951 00:A341 CD 5B A3 -  	CALL LCDDelay
+  952 00:A344 D3 10 -  -  	OUT ($10), A
+  953 00:A346 D9 -  -  -  	EXX
+  954 00:A347 41 -  -  -  	LD B, C
+  955 00:A348 -  -  -  -  ClearLoop0:
+  956 00:A348 7E -  -  -  	LD A, (HL)
+  957 00:A349 23 -  -  -  	INC HL
+  958 00:A34A CD 5B A3 -  	CALL LCDDelay
+  959 00:A34D D3 11 -  -  	OUT ($11), A
+  960 00:A34F 10 F7 -  -  	DJNZ ClearLoop0
+  961 00:A351 19 -  -  -  	ADD HL, DE
+  962 00:A352 D9 -  -  -  	EXX
+  963 00:A353 1C -  -  -  	INC E
+  964 00:A354 10 E4 -  -  	DJNZ ClearLoop1
+  965 00:A356 D9 -  -  -  	EXX
+  966 00:A357 41 -  -  -  	LD B, C
+  967 00:A358 C3 9B 9E -  	JP DisplayEXX
+  968 00:A35B -  -  -  -  ; EndProgram:
+  969 00:A35B -  -  -  -  	; POP AF
+  970 00:A35B -  -  -  -  	; OUT ($20), A
+  971 00:A35B -  -  -  -  	; RET
+  972 00:A35B -  -  -  -  LCDDelay:
+  973 00:A35B F5 -  -  -  	PUSH AF
+  974 00:A35C -  -  -  -  ;	PUSH BC
+  975 00:A35C -  -  -  -  ;	PUSH DE
+  976 00:A35C -  -  -  -  ;	PUSH HL
+  977 00:A35C -  -  -  -  ;	LD B, $FF
+  978 00:A35C -  -  -  -  LcdDelayLoop:
+  979 00:A35C EF -  -  -  	rst 28h
+  980 00:A35D 51 40 -  -  	.dw _LCD_BUSY
+  981 00:A35F -  -  -  -  ;	DJNZ LcdDelayLoop
+  982 00:A35F -  -  -  -  ;	POP HL
+  983 00:A35F -  -  -  -  ;	POP DE
+  984 00:A35F -  -  -  -  ;	POP BC
+  985 00:A35F F1 -  -  -  	POP AF
+  986 00:A360 C9 -  -  -  	RET
+  987 00:A361 -  -  -  -  DelayTable:
+  988 00:A361 66 5C 51 46 
+              3C 31 26 1C 
+              11 0D 0B 0B 
+              0B 09 09 09 
+              06 06 06 04 
+              04 04 04 04 
+              04 04 04 04 
+              04 -  -  -  	.db 102, 92, 81, 70, 60, 49, 38, 28, 17, 13, 11, 11, 11, 9, 9, 9, 6, 6, 6, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
+  989 00:A37E -  -  -  -  RandomTable:
+  990 00:A37E 8C A3 -  -  	.dw SquareData
+  991 00:A380 93 A3 -  -  	.dw Line1Data
+  992 00:A382 A1 A3 -  -  	.dw Z1Data
+  993 00:A384 AF A3 -  -  	.dw S1Data
+  994 00:A386 BD A3 -  -  	.dw J1Data
+  995 00:A388 D9 A3 -  -  	.dw T1Data
+  996 00:A38A F5 A3 -  -  	.dw L1Data
+  997 00:A38C -  -  -  -  ;Pieces: height, width/8+1, width%8, pointer to data, pointer to next piece
+  998 00:A38C -  -  -  -  SquareData:
+  999 00:A38C 06 01 06 -  	.db 6, 1, 6
+ 1000 00:A38F 11 A4 8C A3 	.dw Square, SquareData
+ 1001 00:A393 -  -  -  -  Line1Data:
+ 1002 00:A393 0C 01 03 -  	.db 12, 1, 3 ;vertical
+ 1003 00:A396 17 A4 9A A3 	.dw Line1, Line2Data
+ 1004 00:A39A -  -  -  -  Line2Data:
+ 1005 00:A39A 03 02 04 -  	.db 3, 2, 4 ;horizontal
+ 1006 00:A39D 23 A4 93 A3 	.dw Line2, Line1Data
+ 1007 00:A3A1 -  -  -  -  Z1Data:
+ 1008 00:A3A1 06 02 01 -  	.db 6, 2, 1
+ 1009 00:A3A4 29 A4 A8 A3 	.dw ZZ1, Z2Data
+ 1010 00:A3A8 -  -  -  -  Z2Data:
+ 1011 00:A3A8 09 01 06 -  	.db 9, 1, 6
+ 1012 00:A3AB 35 A4 A1 A3 	.dw ZZ2, Z1Data
+ 1013 00:A3AF -  -  -  -  S1Data:
+ 1014 00:A3AF 06 02 01 -  	.db 6, 2, 1
+ 1015 00:A3B2 47 A4 B6 A3 	.dw SS1, S2Data
+ 1016 00:A3B6 -  -  -  -  S2Data:
+ 1017 00:A3B6 09 01 06 -  	.db 9, 1, 6
+ 1018 00:A3B9 3E A4 AF A3 	.dw SS2, S1Data
+ 1019 00:A3BD -  -  -  -  J1Data:
+ 1020 00:A3BD 06 02 01 -  	.db 6, 2, 1
+ 1021 00:A3C0 53 A4 C4 A3 	.dw J1, J2Data
+ 1022 00:A3C4 -  -  -  -  J2Data:
+ 1023 00:A3C4 09 01 06 -  	.db 9, 1, 6
+ 1024 00:A3C7 5F A4 CB A3 	.dw J2, J3Data
+ 1025 00:A3CB -  -  -  -  J3Data:
+ 1026 00:A3CB 06 02 01 -  	.db 6, 2, 1
+ 1027 00:A3CE 68 A4 D2 A3 	.dw J3, J4Data
+ 1028 00:A3D2 -  -  -  -  J4Data:
+ 1029 00:A3D2 09 01 06 -  	.db 9, 1, 6
+ 1030 00:A3D5 74 A4 BD A3 	.dw J4, J1Data
+ 1031 00:A3D9 -  -  -  -  T1Data:
+ 1032 00:A3D9 06 02 01 -  	.db 6, 2, 1
+ 1033 00:A3DC 7D A4 E0 A3 	.dw TT1, T2Data
+ 1034 00:A3E0 -  -  -  -  T2Data:
+ 1035 00:A3E0 09 01 06 -  	.db 9, 1, 6
+ 1036 00:A3E3 89 A4 E7 A3 	.dw TT2, T3Data
+ 1037 00:A3E7 -  -  -  -  T3Data:
+ 1038 00:A3E7 06 02 01 -  	.db 6, 2, 1
+ 1039 00:A3EA 92 A4 EE A3 	.dw TT3, T4Data
+ 1040 00:A3EE -  -  -  -  T4Data:
+ 1041 00:A3EE 09 01 06 -  	.db 9, 1, 6
+ 1042 00:A3F1 9E A4 D9 A3 	.dw TT4, T1Data
+ 1043 00:A3F5 -  -  -  -  L1Data:
+ 1044 00:A3F5 06 02 01 -  	.db 6, 2, 1
+ 1045 00:A3F8 A7 A4 0A A4 	.dw LL1, L4Data
+ 1046 00:A3FC -  -  -  -  L2Data:
+ 1047 00:A3FC 09 01 06 -  	.db 9, 1, 6
+ 1048 00:A3FF B3 A4 F5 A3 	.dw LL2, L1Data
+ 1049 00:A403 -  -  -  -  L3Data:
+ 1050 00:A403 06 02 01 -  	.db 6, 2, 1
+ 1051 00:A406 BC A4 FC A3 	.dw LL3, L2Data
+ 1052 00:A40A -  -  -  -  L4Data:
+ 1053 00:A40A 09 01 06 -  	.db 9, 1, 6
+ 1054 00:A40D C8 A4 03 A4 	.dw LL4, L3Data
+ 1055 00:A411 -  -  -  -  
+ 1056 00:A411 -  -  -  -  	;fill in rest of pieces here
+ 1057 00:A411 -  -  -  -  Square:
+ 1058 00:A411 FC -  -  -  	.db %11111100
+ 1059 00:A412 B4 -  -  -  	.db %10110100
+ 1060 00:A413 FC -  -  -  	.db %11111100
+ 1061 00:A414 FC -  -  -  	.db %11111100
+ 1062 00:A415 B4 -  -  -  	.db %10110100
+ 1063 00:A416 FC -  -  -  	.db %11111100
+ 1064 00:A417 -  -  -  -  Line1:
+ 1065 00:A417 E0 -  -  -  	.db %11100000
+ 1066 00:A418 A0 -  -  -  	.db %10100000
+ 1067 00:A419 E0 -  -  -  	.db %11100000
+ 1068 00:A41A E0 -  -  -  	.db %11100000
+ 1069 00:A41B A0 -  -  -  	.db %10100000
+ 1070 00:A41C E0 -  -  -  	.db %11100000
+ 1071 00:A41D E0 -  -  -  	.db %11100000
+ 1072 00:A41E A0 -  -  -  	.db %10100000
+ 1073 00:A41F E0 -  -  -  	.db %11100000
+ 1074 00:A420 E0 -  -  -  	.db %11100000
+ 1075 00:A421 A0 -  -  -  	.db %10100000
+ 1076 00:A422 E0 -  -  -  	.db %11100000
+ 1077 00:A423 -  -  -  -  Line2:
+ 1078 00:A423 FF F0 -  -  	.db %11111111, %11110000
+ 1079 00:A425 B6 D0 -  -  	.db %10110110, %11010000
+ 1080 00:A427 FF F0 -  -  	.db %11111111, %11110000
+ 1081 00:A429 -  -  -  -  ZZ1:
+ 1082 00:A429 FC 00 -  -  	.db %11111100, %00000000
+ 1083 00:A42B B4 00 -  -  	.db %10110100, %00000000
+ 1084 00:A42D FC 00 -  -  	.db %11111100, %00000000
+ 1085 00:A42F 1F 80 -  -  	.db %00011111, %10000000
+ 1086 00:A431 16 80 -  -  	.db %00010110, %10000000
+ 1087 00:A433 1F 80 -  -  	.db %00011111, %10000000
+ 1088 00:A435 -  -  -  -  ZZ2:
+ 1089 00:A435 1C -  -  -  	.db %00011100
+ 1090 00:A436 14 -  -  -  	.db %00010100
+ 1091 00:A437 1C -  -  -  	.db %00011100
+ 1092 00:A438 FC -  -  -  	.db %11111100
+ 1093 00:A439 B4 -  -  -  	.db %10110100
+ 1094 00:A43A FC -  -  -  	.db %11111100
+ 1095 00:A43B E0 -  -  -  	.db %11100000
+ 1096 00:A43C A0 -  -  -  	.db %10100000
+ 1097 00:A43D E0 -  -  -  	.db %11100000
+ 1098 00:A43E -  -  -  -  SS2:
+ 1099 00:A43E E0 -  -  -  	.db %11100000
+ 1100 00:A43F A0 -  -  -  	.db %10100000
+ 1101 00:A440 E0 -  -  -  	.db %11100000
+ 1102 00:A441 FC -  -  -  	.db %11111100
+ 1103 00:A442 B4 -  -  -  	.db %10110100
+ 1104 00:A443 FC -  -  -  	.db %11111100
+ 1105 00:A444 1C -  -  -  	.db %00011100
+ 1106 00:A445 14 -  -  -  	.db %00010100
+ 1107 00:A446 1C -  -  -  	.db %00011100
+ 1108 00:A447 -  -  -  -  SS1:
+ 1109 00:A447 1F 80 -  -  	.db %00011111, %10000000
+ 1110 00:A449 16 80 -  -  	.db %00010110, %10000000
+ 1111 00:A44B 1F 80 -  -  	.db %00011111, %10000000
+ 1112 00:A44D FC 00 -  -  	.db %11111100, %00000000
+ 1113 00:A44F B4 00 -  -  	.db %10110100, %00000000
+ 1114 00:A451 FC 00 -  -  	.db %11111100, %00000000
+ 1115 00:A453 -  -  -  -  J1:
+ 1116 00:A453 E0 00 -  -  	.db %11100000, %00000000
+ 1117 00:A455 A0 00 -  -  	.db %10100000, %00000000
+ 1118 00:A457 E0 00 -  -  	.db %11100000, %00000000
+ 1119 00:A459 FF 80 -  -  	.db %11111111, %10000000
+ 1120 00:A45B B6 80 -  -  	.db %10110110, %10000000
+ 1121 00:A45D FF 80 -  -  	.db %11111111, %10000000
+ 1122 00:A45F -  -  -  -  J2:
+ 1123 00:A45F FC -  -  -  	.db %11111100
+ 1124 00:A460 B4 -  -  -  	.db %10110100
+ 1125 00:A461 FC -  -  -  	.db %11111100
+ 1126 00:A462 E0 -  -  -  	.db %11100000
+ 1127 00:A463 A0 -  -  -  	.db %10100000
+ 1128 00:A464 E0 -  -  -  	.db %11100000
+ 1129 00:A465 E0 -  -  -  	.db %11100000
+ 1130 00:A466 A0 -  -  -  	.db %10100000
+ 1131 00:A467 E0 -  -  -  	.db %11100000
+ 1132 00:A468 -  -  -  -  J3:
+ 1133 00:A468 FF 80 -  -  	.db %11111111, %10000000
+ 1134 00:A46A B6 80 -  -  	.db %10110110, %10000000
+ 1135 00:A46C FF 80 -  -  	.db %11111111, %10000000
+ 1136 00:A46E 03 80 -  -  	.db %00000011, %10000000
+ 1137 00:A470 02 80 -  -  	.db %00000010, %10000000
+ 1138 00:A472 03 80 -  -  	.db %00000011, %10000000
+ 1139 00:A474 -  -  -  -  J4:
+ 1140 00:A474 1C -  -  -  	.db %00011100
+ 1141 00:A475 14 -  -  -  	.db %00010100
+ 1142 00:A476 1C -  -  -  	.db %00011100
+ 1143 00:A477 1C -  -  -  	.db %00011100
+ 1144 00:A478 14 -  -  -  	.db %00010100
+ 1145 00:A479 1C -  -  -  	.db %00011100
+ 1146 00:A47A FC -  -  -  	.db %11111100
+ 1147 00:A47B B4 -  -  -  	.db %10110100
+ 1148 00:A47C FC -  -  -  	.db %11111100
+ 1149 00:A47D -  -  -  -  TT1:
+ 1150 00:A47D FF 80 -  -  	.db %11111111, %10000000
+ 1151 00:A47F B6 80 -  -  	.db %10110110, %10000000
+ 1152 00:A481 FF 80 -  -  	.db %11111111, %10000000
+ 1153 00:A483 1C 00 -  -  	.db %00011100, %00000000
+ 1154 00:A485 14 00 -  -  	.db %00010100, %00000000
+ 1155 00:A487 1C 00 -  -  	.db %00011100, %00000000
+ 1156 00:A489 -  -  -  -  TT2:
+ 1157 00:A489 E0 -  -  -  	.db %11100000
+ 1158 00:A48A A0 -  -  -  	.db %10100000
+ 1159 00:A48B E0 -  -  -  	.db %11100000
+ 1160 00:A48C FC -  -  -  	.db %11111100
+ 1161 00:A48D B4 -  -  -  	.db %10110100
+ 1162 00:A48E FC -  -  -  	.db %11111100
+ 1163 00:A48F E0 -  -  -  	.db %11100000
+ 1164 00:A490 A0 -  -  -  	.db %10100000
+ 1165 00:A491 E0 -  -  -  	.db %11100000
+ 1166 00:A492 -  -  -  -  TT3:
+ 1167 00:A492 1C 00 -  -  	.db %00011100, %00000000
+ 1168 00:A494 14 00 -  -  	.db %00010100, %00000000
+ 1169 00:A496 1C 00 -  -  	.db %00011100, %00000000
+ 1170 00:A498 FF 80 -  -  	.db %11111111, %10000000
+ 1171 00:A49A B6 80 -  -  	.db %10110110, %10000000
+ 1172 00:A49C FF 80 -  -  	.db %11111111, %10000000
+ 1173 00:A49E -  -  -  -  TT4:
+ 1174 00:A49E 1C -  -  -  	.db %00011100
+ 1175 00:A49F 14 -  -  -  	.db %00010100
+ 1176 00:A4A0 1C -  -  -  	.db %00011100
+ 1177 00:A4A1 FC -  -  -  	.db %11111100
+ 1178 00:A4A2 B4 -  -  -  	.db %10110100
+ 1179 00:A4A3 FC -  -  -  	.db %11111100
+ 1180 00:A4A4 1C -  -  -  	.db %00011100
+ 1181 00:A4A5 14 -  -  -  	.db %00010100
+ 1182 00:A4A6 1C -  -  -  	.db %00011100
+ 1183 00:A4A7 -  -  -  -  LL1:
+ 1184 00:A4A7 03 80 -  -  	.db %00000011, %10000000
+ 1185 00:A4A9 02 80 -  -  	.db %00000010, %10000000
+ 1186 00:A4AB 03 80 -  -  	.db %00000011, %10000000
+ 1187 00:A4AD FF 80 -  -  	.db %11111111, %10000000
+ 1188 00:A4AF B6 80 -  -  	.db %10110110, %10000000
+ 1189 00:A4B1 FF 80 -  -  	.db %11111111, %10000000
+ 1190 00:A4B3 -  -  -  -  LL2:
+ 1191 00:A4B3 FC -  -  -  	.db %11111100
+ 1192 00:A4B4 B4 -  -  -  	.db %10110100
+ 1193 00:A4B5 FC -  -  -  	.db %11111100
+ 1194 00:A4B6 1C -  -  -  	.db %00011100
+ 1195 00:A4B7 14 -  -  -  	.db %00010100
+ 1196 00:A4B8 1C -  -  -  	.db %00011100
+ 1197 00:A4B9 1C -  -  -  	.db %00011100
+ 1198 00:A4BA 14 -  -  -  	.db %00010100
+ 1199 00:A4BB 1C -  -  -  	.db %00011100
+ 1200 00:A4BC -  -  -  -  LL3:
+ 1201 00:A4BC FF 80 -  -  	.db %11111111, %10000000
+ 1202 00:A4BE B6 80 -  -  	.db %10110110, %10000000
+ 1203 00:A4C0 FF 80 -  -  	.db %11111111, %10000000
+ 1204 00:A4C2 E0 00 -  -  	.db %11100000, %00000000
+ 1205 00:A4C4 A0 00 -  -  	.db %10100000, %00000000
+ 1206 00:A4C6 E0 00 -  -  	.db %11100000, %00000000
+ 1207 00:A4C8 -  -  -  -  LL4:
+ 1208 00:A4C8 E0 -  -  -  	.db %11100000
+ 1209 00:A4C9 A0 -  -  -  	.db %10100000
+ 1210 00:A4CA E0 -  -  -  	.db %11100000
+ 1211 00:A4CB E0 -  -  -  	.db %11100000
+ 1212 00:A4CC A0 -  -  -  	.db %10100000
+ 1213 00:A4CD E0 -  -  -  	.db %11100000
+ 1214 00:A4CE FC -  -  -  	.db %11111100
+ 1215 00:A4CF B4 -  -  -  	.db %10110100
+ 1216 00:A4D0 FC -  -  -  	.db %11111100
+ 1217 00:A4D1 -  -  -  -  
+ 1218 00:A4D1 -  -  -  -  ;same for other pieces and their rotations
+ 1219 00:A4D1 -  -  -  -  
+ 1220 00:A4D1 -  -  -  -  end 

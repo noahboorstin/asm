@@ -1,0 +1,66 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+.LIST
+
+	.org 9D93h
+	.db $BB,$6D
+
+	ld A, 6
+	ld (X), A
+	ld A, 0
+	ld (Y), A
+Repeat:
+	ld A, (Y)
+	INC A
+	ld (Y), A
+	ld L, A
+	ld A, (X)
+	INC A
+	ld (X), A
+
+	CP 68
+	JR Z, Quit
+	CALL GetPixel
+	OR (HL)
+	ld (HL), A
+	B_CALL(_GrBufCpy)
+Quit:
+	
+	
+    ret
+
+GetPixel:
+    LD     H, 0
+    LD     D, H
+    LD     E, L
+    ADD    HL, HL
+    ADD    HL, DE
+    ADD    HL, HL
+    ADD    HL, HL
+
+    LD     E, A
+    SRL    E
+    SRL    E
+    SRL    E
+    ADD    HL, DE
+
+    LD     DE, PlotSScreen
+    ADD    HL, DE
+
+    AND    7
+    LD     A, $80
+    RET    Z
+    LD     B, A
+Loop:
+    RRCA
+    DJNZ   Loop
+    RET
+
+end
+
+X:	.EQU	AppBackUpScreen
+Y:	.EQU	AppBackUpScreen+4

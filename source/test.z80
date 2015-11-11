@@ -1,0 +1,69 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+.LIST
+
+     .org 9D93h
+     .db $BB,$6D
+      
+      B_CALL(_ClrLCDFull)
+      B_CALL(_RunIndicOff)
+
+      ld B, 0
+      ld C, 0
+      ld A, $01
+      ld (Letter), A  ;sets the variables
+Loop:
+      ld A, C
+      ld (CurRow), A
+      ld A, B
+      ld (CurCol), A
+      ld A, (Letter)
+      B_CALL(_PutC)            ; Display the text
+
+      INC B
+
+
+      ld A, (Letter)
+      CP $FF
+      JR Z, Reset
+      JR Continue
+Reset:
+      ld A, $00
+Continue:
+      INC A
+      ld (Letter), A
+
+
+      ld A, B
+      CP 16
+      JR Z, Nextln
+      JR Loop
+Nextln:
+      ld B, 0
+      INC C
+      
+      ld A, C
+      CP 7
+      JR Z, Wait      
+      JR Loop
+Wait:
+      B_CALL(_GetKeyRetOff)
+
+      CP 0
+      JR Z, Stop
+      ld B, 0
+      ld C, 0
+      JR Loop
+
+Stop:
+      B_CALL(_RunIndicOn)
+      ret   
+end
+
+Letter .EQU AppBackUpScreen
+
+_GetKeyRetOff .EQU $500B

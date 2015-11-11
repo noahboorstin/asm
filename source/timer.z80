@@ -1,0 +1,25 @@
+.NOLIST
+
+#include "ti83plus.inc"
+
+	.org 9D93h
+	.db $BB,$6D	
+	DI
+Beginning:
+	LD A, $47
+	OUT ($30), A
+	LD A, 0
+	OUT ($31), A
+	LD A, 16
+	OUT ($32), A
+Wait:
+	IN A, (4)
+	BIT 5, A
+	JR Z, Wait
+;	LD A, 'A'
+;	B_CALL(_PutC)
+	LD A, $FF
+	OUT ($11), A
+	JR beginning
+	
+end 

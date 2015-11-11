@@ -1,0 +1,90 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+	.org 9D93h
+	.db $BB,$6D	
+#define location AppBackUpScreen
+	LD HL, location
+	LD A, 1
+	B_CALL($5026) ;enable parser hook
+	LD HL, Stuff
+	LD DE, location
+	LD BC, EndStuff-Stuff
+	LDIR
+	RET
+Stuff:
+	.db $83
+	CP 0
+	JR NZ, Return
+	BIT 7, (IY+33)
+	JR NZ, OtherParse
+	LD HL, ($965B)
+	LD A, (HL)
+	CP $98 ;check if is StorePic
+	JR NZ, Return
+	SET 7, (IY+33)
+	INC HL
+	LD (location+OtherParse+1-Stuff), HL
+	;find other thing
+	EX DE, HL
+	LD HL, ($965F)
+	OR A
+	SBC HL, DE
+	LD B, L
+	INC B
+	LD HL, ($965D)
+	INC HL
+FindLoop:
+	LD A, (HL)
+	CP $2B
+	JR Z, DoneFindLoop
+	INC HL
+	DJNZ FindLoop
+	RET
+DoneFindLoop:
+	DEC HL
+	LD (location+OtherParseEnd+1-Stuff), HL
+	LD HL, Y1+location-Stuff
+	RST 20h	
+	B_CALL(_ParseInp)
+	RES 7, (IY+33)
+	;do sommething useful with this answer here
+	LD HL, ($965D)
+	EX DE, HL
+	LD HL, ($965F)
+	OR A
+	SBC HL, DE
+	LD B, L
+	INC B
+	LD HL, ($965D)
+Loop:
+	LD A, (HL)
+	CP $3E
+	JR Z, DoneLoop
+	INC HL
+	DJNZ Loop
+DoneLoop:
+	LD ($965D), HL
+Return:
+	CP A
+	RET
+Ans:
+	.db MatObj, tAns, 0, 0
+OtherParse:
+	LD HL, 0
+	LD ($965B), HL
+	LD ($965D), HL
+OtherParseEnd:
+	LD HL, 0
+	LD ($965F), HL
+	CP A
+	RET
+Y1:
+	.db EquObj, tVarEqu, tY1, 0
+EndStuff:
+
+end 

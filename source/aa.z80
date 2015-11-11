@@ -1,0 +1,45 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+	.org 9D93h
+	.db $BB,$6D	
+	
+	DI
+	LD HL, PlotSScreen
+	LD DE, Stuff
+	LD A, 4
+	LD C, 0
+	OR A
+Loop0:
+	EX AF, AF'	
+	LD A, (DE)
+	LD B, 5
+	SRL C
+Loop1:
+	RRA
+	RR C
+	DJNZ Loop1
+	LD (HL), A
+	LD B, 3
+Loop2:
+	SRL C
+	DJNZ Loop2
+	INC HL
+	INC DE
+	EX AF, AF'
+	DEC A
+	JR NZ, Loop0
+	LD B, 3
+Loop3:
+	RLC C
+	DJNZ Loop3
+	LD (HL), C
+	B_CALL(_GrBufCpy)
+	RET
+Stuff:
+	.db %10101010, %10101010, %10101010, %10101010
+end 

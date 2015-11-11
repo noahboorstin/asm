@@ -1,0 +1,17 @@
+#include "ti83plus.inc"
+	.org 9D93h
+	.db $BB,$6D
+	ld a, 1
+	out ($20), a
+	ld d, $ff
+	xor a
+start:
+	ld b, d
+sound1:
+	djnz sound1
+	ld b, d
+sound2:
+	djnz sound2
+	xor 3
+	out (0), a	
+	jr start

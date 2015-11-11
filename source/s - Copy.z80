@@ -1,0 +1,213 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+#define ARROWS $FE
+#define DOWN $FE
+#define LEFT $FD
+#define RIGHT $FB
+#define UP $F7
+.LIST
+	.org 9D93h
+	.db $BB,$6D	
+	DI ;savesscreen contents: first 2bytes is horizontal position, then vertical position
+	LD HL, AppBackUpScreen
+	LD DE, AppBackUpScreen+1
+	LD BC, 768
+	LD (HL), 0
+	LDIR ;clears AppBackUpScreen
+	LD HL, saveSScreen
+	LD DE, saveSScreen+1
+	LD BC, 768
+	LD (HL), 0
+	LDIR ;clears saveSScreen
+	LD D, 12 
+	LD A, $80 
+	OUT ($10), A
+Clear0:
+	LD A, $1F
+	ADD A, D
+	OUT ($10), A
+	LD A, 0
+	LD B, 64
+Clear:
+	OUT ($11), A
+	DJNZ Clear
+	DEC D
+	LD A, D
+	CP 0
+	JR NZ, Clear0 ;clears screen
+	LD A, %10000000
+	LD (AppBackUpScreen), A ;stores a pixel to start...
+	LD (saveSScreen+4), A
+	LD HL, AppBackUpScreen
+	LD (saveSScreen), HL
+	LD A, $20 
+	LD (saveSScreen+2), A
+	OUT ($10), A
+	LD A, $80
+	LD (saveSScreen+3), A
+	OUT ($10), A
+	LD A, %10000000
+	OUT ($11), A ;and puts that pixel on the screen	
+Key:
+	LD A, $FD
+	OUT (1), A
+	IN A, (1)
+	CP $BF
+	JP Z, Break
+	LD A, ARROWS
+	OUT (1), A
+	CALL Delay
+	IN A, (1)
+	CP DOWN
+	JR Z, aDown
+	CP RIGHT
+	JR Z, aRight
+	CP LEFT
+	JR Z, aLeft
+	CP UP
+	JP Z, aUp
+;	JP Key
+	LD A, (saveSScreen+5)
+	CP 0
+	JR Z, Down
+	CP 1
+	JR Z, Right
+	CP 2
+	JR Z, Left
+	CP 3
+	JP Z, Up
+aDown:
+	LD A, 0
+	LD (saveSScreen+5), A
+Down:
+	LD A, (saveSScreen+3)
+	INC A
+	CP $C0
+	JP NC, Break
+;	OUT ($10), A ;not necessary because of automatic moving...
+	LD (saveSScreen+3), A
+	LD HL, (saveSScreen)
+	LD BC, 12
+	ADD HL, BC
+	LD (saveSScreen), HL
+	LD B, (HL)
+	LD A, (saveSScreen+4)
+	AND B
+	JP NZ, Break
+	LD A, (saveSScreen+4)
+	OR B
+	JP Done
+aRight:
+	LD A, 1
+	LD (saveSScreen+5), A
+Right:
+	LD A, (saveSScreen+3)
+	OUT ($10), A
+	LD HL, (saveSScreen)
+	LD A, (saveSScreen+4)
+	SRL A
+	JR NZ, Right0
+	LD A, (saveSScreen+2)
+	INC A
+	CP $2C
+	JP NC, Break
+	LD (saveSScreen+2), A
+	OUT ($10), A
+	INC HL
+	LD (saveSScreen), HL
+	LD A, %10000000
+Right0:
+	LD B, (HL)
+	LD (saveSScreen+4), A
+	AND B
+	JP NZ, Break
+	LD A, (saveSScreen+4)
+	OR B
+	JP Done
+aLeft
+	LD A, 2
+	LD (saveSScreen+5), A
+Left:
+	LD A, (saveSScreen+3)
+	OUT ($10), A
+	LD HL, (saveSScreen)
+	LD A, (saveSScreen+4)
+	SLA A
+	JR NZ, Left0
+	LD A, (saveSScreen+2)
+	DEC A
+	CP $20
+	JR C, Break
+	LD (saveSScreen+2), A
+	OUT ($10), A
+	DEC HL
+	LD (saveSScreen), HL
+	LD A, 1
+Left0:
+	LD B, (HL)
+	LD (saveSScreen+4), A
+	AND B
+	JP NZ, Break
+	LD A, (saveSScreen+4)
+	OR B
+	JP Done
+aUp:
+	LD A, 3
+	LD (saveSScreen+5), A
+Up:
+	LD A, (saveSScreen+3)
+	DEC A
+	CP $80
+	JR C, Break
+	OUT ($10), A
+	LD (saveSScreen+3), A
+	LD HL, (saveSScreen)
+	OR A
+	LD BC, 12
+	SBC HL, BC
+	LD (saveSScreen), HL
+	LD B, (HL)
+	LD A, (saveSScreen+4)
+	AND B
+	JP NZ, Break
+	LD A, (saveSScreen+4)
+	OR B
+	;add pixel shifting...
+Done: ;LCD coordinates must be updated by this point!
+	LD (HL), A
+	OUT ($11), A
+	JP Key
+Break:
+	EI
+	RET
+
+Delay: ;some very sloppy delaying:
+	PUSH BC
+	LD B, $30 ;something about 40 if using a real ti-84, FF for the virtual calculator
+Delay0:
+	CALL Delay1
+	DJNZ Delay0
+	POP BC
+	RET
+Delay1:
+	PUSH BC
+	LD B, $FF
+Delay2:
+	PUSH BC
+	POP BC
+	PUSH BC
+	POP BC
+	PUSH BC
+	POP BC
+	PUSH BC
+	POP BC
+	DJNZ Delay2
+	POP BC
+	RET
+
+end

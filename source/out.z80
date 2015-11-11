@@ -1,0 +1,19 @@
+g.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+.LIST
+
+	.org 9D93h
+	.db $BB,$6D
+	
+	LD A, %00000001
+	OUT (0), A
+	B_CALL(_GetKey)
+	LD A, %00000010
+	OUT (0), A
+
+	RET
+END

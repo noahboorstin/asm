@@ -1,0 +1,266 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+
+	.org 9D93h
+	.db $BB,$6D
+	
+	B_CALL(_ClrLCDFull)
+	DI
+	
+
+	LD DE, $2280 ;initial setup
+	LD C, $10
+	EXX
+	LD C, 5 
+	
+	LD A, 2
+	EX AF, AF' ;end setup
+	
+	EX AF, AF' ;display thing
+	LD E, A
+Horizontal:
+	LD A, $27
+	OUT ($10), A
+Vertical:
+	LD A, $BB
+	OUT ($10), A
+
+	LD B, 4
+	LD HL, MoreThings
+Loop1:
+	LD D, (HL)
+	LD A, E
+	CP 0
+	JR Z, Done1
+Rpt1:
+	SRL D
+	DEC A
+	JR NZ, Rpt1
+Done1:
+	LD A, D
+	OUT ($11), A
+	INC HL
+	DJNZ Loop1
+	LD A, E
+	CP 0
+	JR Z, Done3
+	LD A, (Horizontal+1)
+	INC A
+	OUT ($10), A
+	LD A, (Vertical+1)
+	OUT ($10), A
+	LD B, 4
+	LD HL, MoreThings
+Loop2:
+	LD D, (HL)
+	LD A, 8
+	SUB E
+	CP 0
+	JR Z, Done2
+Rpt2:
+	SLA D
+	DEC A
+	JR NZ, Rpt2
+Done2:
+	LD A, D
+	OUT ($11), A
+	INC HL
+	DJNZ Loop2
+	LD A, E
+Done3:
+	EX AF, AF' ;done displaying ship
+SamePlace:
+	LD A, $07 ;fun things for this function: 
+					;D': horizontal position, 
+					;C: horizontal rotation, 
+					;E': vertical position
+	OUT ($10), A
+	LD HL, Things
+	EXX
+	LD B, 32
+Disp2:
+	OUT (C), D
+	OUT (C), E
+	EXX
+	LD B, 10
+	LD E, 0
+Disp:
+	LD D, (HL)
+	LD A, C
+	CP 0
+	JR Z, DoneShifting
+Shift: ;look for a better way to do this
+	SRL D
+	BIT 0, E
+	JR Z, Zero
+	SET 7, D
+Zero:
+	RR E
+	DEC A
+	JR NZ, Shift
+DoneShifting:
+	LD A, 8 
+	SUB C
+	CP 8
+	JR Z, DoneShifting1
+	CP 0
+	JR Z, DoneShifting1
+Shift1:
+	RR E
+	DEC A
+	JR NZ, Shift1
+DoneShifting1:
+	LD A, D
+	OUT ($11), A
+	BIT 0, B
+	JR NZ, Uh
+	INC HL
+	JR Uh1
+Uh:
+	DEC HL
+Uh1:
+	DJNZ Disp	
+	INC HL
+	LD A, C
+	CP 6
+	JR C, Fine
+	LD A, (HL)
+	RLA
+	BIT 0, C
+	JR NZ, Okay
+	SLA A
+Okay:
+	OUT ($11), A
+Fine:
+	INC HL
+	EXX
+	INC E
+	LD A, B
+	CP 25
+	JR Z, Space
+	CP 12
+	JR NZ, DoneSpace
+Space:
+	SUB 4
+	LD B, A
+	LD A, E
+	ADD A, 4
+	LD E, A	
+DoneSpace:
+	DJNZ Disp2
+	LD A, E
+	SUB 32
+	LD E, A
+	EXX 
+	LD A, 5
+	OUT ($10), A ;done displaying things
+	;moving things:
+Direction:
+	JR Decrement
+Decrement:
+	DEC C
+	LD A, C
+	CP 4
+	JR NZ, Decrement1
+	EXX
+	LD A, D
+	CP $22
+	JR Z, EXXDoneMoving
+	ADD A, 10
+	OUT ($10), A
+	LD A, E
+	ADD A, 16
+	OUT ($10), A
+	LD A, 0
+	OUT ($11), A
+	OUT ($11), A
+	OUT ($11), A
+	LD A, E
+	ADD A, 25
+	OUT ($10), A
+	LD A, 0
+	OUT ($11), A
+	OUT ($11), A
+	OUT ($11), A
+	OUT ($11), A
+	JR EXXDoneMoving
+Decrement1:
+	CP $FF
+	JR NZ, DoneMoving
+	LD C, 7
+	EXX
+	DEC D
+	LD A, D
+	CP $1F
+	JR NZ, EXXDoneMoving
+	LD A, 67 ;ugh...self modifying code again... CHECK IF THIS IS THE RIGHT NUMBER!!
+	LD (Direction+1), A
+	INC D
+	INC E
+	JR EXXDoneMoving
+Increment: 
+	RET
+	
+EXXDoneMoving:
+	EXX
+DoneMoving:
+	LD B, $FF ;Key
+Key:
+	LD A, $FE ;activate keys
+	OUT (1), A
+	B_CALL(_LCD_BUSY)
+	IN A, (1)
+	CP $FD ;left
+	JR NZ, Key
+	;do something with this input...
+	;DJNZ Key
+	JP SamePlace
+EndProgram:
+	EI
+	RET
+Things:
+	.db %00001100, %00000000
+	.db %00011110, %00000000
+	.db %00111111, %00000000
+	.db %01101101, %10000000
+	.db %01111111, %10000000
+	.db %00010010, %00000000
+	.db %00101101, %00000000
+	.db %01010010, %10000000
+	
+	.db %00100000, %10000000
+	.db %00010001, %00000000
+	.db %00111111, %10000000
+	.db %01101110, %11000000
+	.db %11111111, %11100000
+	.db %10111111, %10100000
+	.db %10100000, %10100000
+	.db %00011011, %00000000
+	
+	.db %00100000, %10000000
+	.db %10010001, %00100000
+	.db %10111111, %10100000
+	.db %11101110, %11100000
+	.db %11111111, %11100000
+	.db %01111111, %11000000
+	.db %00100000, %10000000
+	.db %01000000, %01000000
+MoreThings:
+	.db %00111100
+	.db %00111100
+	.db %11111111
+	.db %11111111
+end 
+
+
+
+
+
+
+
+

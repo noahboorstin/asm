@@ -1,0 +1,30 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+.LIST
+
+	.org 9D93h
+	.db $BB,$6D	
+	LD A, 4
+	EXX
+	LD B, A
+	LD C, 3
+	LDDR
+	PUSH HL
+	POP BC
+Um:
+	JP Um
+	B_CALL(_ClrLCDFull)
+	LD HL, VarA
+	B_CALL(_Mov9ToOP1)
+	B_CALL(_FindSym)
+	EX DE, HL
+	B_CALL(_DispHL)
+	
+	RET
+VarA:
+	.DB RealObj, tA, 0, 0
+end 

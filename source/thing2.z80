@@ -1,0 +1,71 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+#define times 3 ;if this changes, change other thing
+#define length 5
+
+	.org 9D93h
+	.db $BB,$6D
+	B_CALL(_ClrLCDFull)
+	
+	LD A, $21
+	LD I, A
+	LD D, $80
+	
+	
+	
+	LD A, D
+	ADD A, 39
+	LD (Compare+1), A
+	LD C, 0
+Loop3:
+	LD HL, Things
+Loop2:
+	LD A, I
+	OUT ($10), A
+	LD A, D
+Loop0:
+	OUT ($10), A
+	EX AF, AF'
+	LD B, 8
+Loop1:
+	LD A, 1 ;this should change
+	LD E, (HL)
+	CP 0
+	JR Z, DoneShifting
+ShiftDirection:
+	SRL E
+DoneShifting:
+	LD A, E	
+	
+	OUT ($11), A
+	INC HL
+	DJNZ Loop1
+	EX AF, AF'
+	ADD A, 13 ;adjusts the spacing between things
+Compare:
+	CP $A7
+	JR NZ, Loop0
+	INC C
+	LD A, I
+	INC A
+	LD I, A
+	BIT 0, C
+	JR NZ, Loop2
+	LD A, C
+	CP 10
+	JR NZ, Loop3
+	RET
+Things:
+	.db %00001100, %00011110, %00111111, %01101101, %01111111, %00010010, %00101101, %01010010
+	.db %00100000, %00010001, %00111111, %01101110, %11111111, %10111111, %10100000, %00011011
+	.db %00100000, %10010001, %10111111, %11101110, %11111111, %01111111, %00100000, %01000000
+	
+	.db  0		 ,  0		,  0	   , %10000000, %10000000, 0		, 0		   , %10000000
+	.db %10000000,  0		, %10000000, %11000000, %11100000, %10100000, %10100000, 0
+	.db %10000000, %00100000, %10100000, %11100000, %11100000, %11000000, %10000000, %01000000
+	
+end 	

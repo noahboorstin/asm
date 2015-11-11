@@ -1,0 +1,22 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#include "ti83plus.inc"
+.LIST
+
+#define ArrowKeys $FE
+#define DownKey $FE
+#define LeftKey $FD
+#define RightKey $FB
+#define UpKey $F7
+
+	.org 9D93h
+	.db $BB,$6D	
+	LD     HL, $1F38
+    LD     (PenCol), HL      ; PenCol comes before PenRow
+    LD     A, 'q'
+    rst 28h
+	.dw _VPutMap
+	rst 28h
+	.dw _VPutMap
+    RET

@@ -1,0 +1,122 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+.LIST
+
+	.org 9D93h
+	.db $BB,$6D
+	LD HL, String1
+	B_CALL(_Mov9ToOP1)
+	B_CALL(_FindSym)
+	EX DE, HL
+	INC HL
+	INC HL
+	B_CALL(_StrLength);HL = start of string; BC is string length
+	;DEC BC
+	LD (Location), HL
+	LD (Length), BC
+	
+	LD A, D0HD1L
+	OUT (bport), A
+	LD D, 0
+Rpt1:
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	INC D
+	LD A, D
+	CP $FF
+	JP NZ, Rpt1
+	
+BeginSend:
+	LD HL, (Location)
+	LD B, (HL)
+	LD C, %10000000
+ByteSend:
+	LD A, B
+	AND C
+	CP 0
+	JP Z, Zero
+	JP One
+Back:
+	LD D, 0
+Rpt2:
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	INC D
+	LD A, D
+	CP $FF
+	JP NZ, Rpt2
+	LD A, D0HD1L
+	OUT (bport), A
+	LD D, 0
+Rpt3:
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	INC D
+	LD A, D
+	CP $FF
+	JP NZ, Rpt3
+	
+	SRL C
+	LD A, C
+	CP 0
+	JR NZ, ByteSend
+	
+	; done sending a byte
+	LD D, 0
+Rpt4:
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	INC D
+	LD A, D
+	CP $FF
+	JP NZ, Rpt4
+	LD BC, (Length)
+	LD HL, (Location)
+	INC HL
+	LD (Location), HL
+	DEC BC
+	LD (Length), BC
+	LD A, C
+	CP 0
+	JP NZ, BeginSend
+	LD A, B
+	CP 0
+	JP NZ, BeginSend
+	JP Done
+Done:
+	LD A, D0HD1H
+	OUT (bport), A
+	RET
+
+Zero:
+	LD A, D0HD1H
+	OUT (bport), A
+	JR Back
+One:
+	LD A, D0LD1H
+	OUT (bport), A
+	JR Back
+	
+String1:
+	.DB StrngObj,tVarStrng,tStr1,0,0
+Location .EQU AppBackUpScreen
+Length .EQU AppBackUpScreen + 4
+
+	
+	end

@@ -1,0 +1,219 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+	.org 9D93h
+	.db $BB,$6D	
+#define location AppBackUpScreen
+#define savelocation location+EndStuff-Stuff
+	.echo savelocation
+	LD HL, location
+	LD A, 1
+	B_CALL($5026) ;enable parser hook
+	LD HL, location+TokenHook-Stuff
+	LD A, 1
+	B_CALL($4F99)
+	LD HL, Stuff
+	LD DE, location
+	LD BC, EndStuff-Stuff
+	LDIR
+	RET
+	
+	
+Stuff:
+	.db $83
+	CP 0
+	
+	JR NZ, Return
+	LD HL, ($965B)
+	LD A, (HL)
+	CP $99
+	JR Z, Sprite
+	CP $98 ;check if is StorePic
+	JR NZ, Return
+Sprite:
+	DI
+	EX AF, AF'
+	LD HL, ($965F)
+	LD A, (HL)
+	CP $11
+	JR Z, ClosedParenthesis
+	INC HL
+	LD (HL), $11
+ClosedParenthesis:
+	LD HL, ($965B)
+	INC HL
+	CALL Parse+location-Stuff 
+	EX AF, AF'
+	CP $98
+	JR Z, Label0
+	EX AF, AF'
+	;add some stuff here?
+	JR Label1
+Label0:
+	EX AF, AF'
+	LD (savelocation), A
+Label1:
+	LD D, A
+	LD A, (HL)
+	CP $2B
+	RET NZ ;could do my errors better....
+	INC HL
+	CALL Parse+location-Stuff
+	EX AF, AF'
+	CP $99
+	JR Z, RecallSprite
+	EX AF, AF'
+	LD (savelocation+1), A
+	LD B, A
+	;find a better place for it
+	LD C, 1
+Loop1:
+	CP 9
+	JR C, DoneLoop1
+	SRA A
+	SRA A
+	SRA A
+	INC C
+	JR Loop1
+DoneLoop1:
+	LD A, C
+	LD A, 12
+	SUB C
+	LD (location+Amount+1-Stuff), A
+	LD (savelocation+2), A
+	LD A, D
+	LD B, 0
+	LD HL, PlotSScreen
+	LD DE, savelocation+3
+	PUSH BC
+CopyLoop:
+	POP BC
+	PUSH BC
+	LDIR
+Amount:
+	LD B, 0
+OtherCopyLoop:
+	INC HL
+	DJNZ OtherCopyLoop
+	DEC A
+	JR NZ, CopyLoop
+	POP BC
+	OR 1
+	RET
+Return:
+	CP A
+	RET	
+Parse: ;i know this is really bad.
+	LD A, (HL)
+	SUB $30
+	LD B, A
+	INC HL
+	LD A, (HL)
+	CP $11
+	JR Z, ReturnParse
+	CP $2B
+	JR Z, ReturnParse
+	SUB $30
+	LD C, A
+	SLA B
+	LD A, B
+	SLA A
+	SLA A
+	ADD A, C
+	ADD A, B
+	INC HL
+	RET
+ReturnParse:
+	LD A, B
+	RET
+RecallSprite:
+	EX AF, AF'
+	LD E, A
+	LD A, D
+	PUSH DE
+	LD DE, 12
+	LD HL, PlotSScreen
+	CP 0
+	JR Z, DoneMoving1
+Move1:
+	ADD HL, DE
+	DEC A
+	JR NZ, Move1
+DoneMoving1:
+	LD A, (savelocation+2) ;displaying
+	LD (location+Move2+1-Stuff), A
+	ADD A, ~12
+	CPL
+	LD E, A
+	LD D, 0
+	ADD HL, DE
+	LD C, A
+	LD B, 0
+	LD A, (savelocation+1)
+Mod:
+	CP 9
+	JR C, DoneMod
+	SLA A
+	SLA A
+	SLA A
+	JR Mod
+DoneMod:
+	LD DE, savelocation+3
+	EX DE, HL
+
+	LD B, 0
+	PUSH BC
+	LD A, (savelocation)
+Move0:
+	POP BC
+	PUSH BC
+	LDIR
+Move2:
+	LD B, 0
+Move3:
+	INC DE
+	DJNZ Move3
+	DEC A
+	JR NZ, Move0
+	POP BC
+	POP BC
+	B_CALL(_GrBufCpy)
+	OR 1
+	RET
+	;token hook:
+TokenHook:
+	.db $83
+	LD A, D
+	CP $01
+	RET NZ
+	LD A, E
+	CP $30
+	JR Z, Sto
+	CP $32
+	RET NZ
+	LD HL, location+RclStuff-Stuff
+	LD DE, localTokStr+1
+	LD BC, 14
+	LDIR
+	LD HL, localTokStr
+	RET
+Sto:
+	LD HL, location+StoStuff-Stuff
+	LD DE, localTokStr+1
+	LD BC, 13
+	LDIR
+	LD HL, localTokStr
+	RET
+RclStuff:
+	.db 13, "RecallSprite("
+StoStuff:	
+	.db 12, "StoreSprite("	
+	
+EndStuff:
+
+
+end 

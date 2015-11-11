@@ -1,0 +1,62 @@
+.NOLIST
+#define AppName "app",0,0,0,0,0
+#include "ti83plus.inc"
+.LIST
+	
+
+	ld a, 1
+	out ($20), a
+	ld hl, 0
+	ld (currow), hl	
+	ld hl, text
+	ld de, endtext
+	di
+start:
+	exx
+	ld b, 8
+	ld hl, 0
+	ld (currow), hl	
+first:
+	exx
+	ld b, 16
+Loop1:
+	ld a, (hl)
+	b_call _putc
+	inc hl
+
+	djnz loop1
+doneloop1:
+	exx
+	djnz first
+	exx
+done:
+	push hl
+	b_call(_getkey)
+	pop hl
+	cp kdown
+	jr nz, up
+	ld de, endtext-15
+	or a
+	sbc hl, de
+	add hl, de
+	jr nc, done
+	ld de, 16*7
+	or a 
+	sbc hl, de
+	jr start
+up:	
+	cp kup
+	call nz, 50h
+	.dw _JForceCmdNoChar
+	ld de, text+(16*9)
+	or a
+	sbc hl, de
+	add hl, de
+	jr c, done
+	ld de, 16*9
+	sbc hl, de
+	jr start
+text:
+#include "text.txt"
+endtext:
+end

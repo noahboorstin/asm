@@ -1,0 +1,63 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+.LIST
+	.org 9D93h
+	.db $BB,$6D
+	
+	;recieve instructions here. Should be continuous into AppBackUpScreen
+	;CANNOT BE LONGER THAN 768 BYTES!!!!
+	;odd... i'm not sure what happens when I exceed this...
+	
+	;just loading some test values here...
+	LD C, 'B'
+	LD HL, TempString
+	LD (HL), B
+	LD B, 'C'
+	INC HL
+	LD (HL), B
+	INC HL
+	LD B, $01
+	LD (HL), B
+	;moving from temp to Str1
+	LD HL, String1
+	B_CALL(_Mov9ToOP1)
+	B_CALL(_FindSym) ; HL is table, DE is start
+	PUSH DE
+	B_CALL(_DelVar)
+	LD HL, TempString
+	B_CALL(_StrLength) ;BC is length, DE(in stack) is start, 
+	LD A, B
+	CP 0
+	JP NZ, LengthError
+	LD HL, String1
+	B_CALL(_Mov9ToOp1)
+	LD HL, 0
+	LD (CurRow), HL
+	LD H, B
+	LD L, C
+	B_CALL(_DispHL)	
+	B_CALL(_CreateStrng) ;string is now of proper length, HL is table entry
+	POP DE 
+	INC DE
+	INC DE ;DE is start
+	LD HL, TempString
+	;LDIR	
+	RET	
+LengthError:
+	LD HL, 0
+	LD (CurRow), HL
+	LD HL, Error
+	B_CALL(_PutS)
+	RET
+	
+	
+String1:
+	.DB StrngObj,tVarStrng,tStr1,0,0
+TempString .EQU AppBackUpScreen
+Error .DB "ERROR!"
+	
+	end

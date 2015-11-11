@@ -1,0 +1,35 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+.LIST
+
+	.org 9D93h
+	.db $BB,$6D
+	
+	LD HL, base
+	LD (HL), 3 ;arbitrary number for now...
+	LD HL, number
+	LD (HL), 30 ;another arbitrary number
+	LD HL, result
+	LD (HL), 0 ;not arbitrary
+rpt:
+	LD HL, base
+	LD B, (HL)
+	
+	
+	
+	RET ;end of program
+	
+power: ;returns A
+	
+	
+	
+	
+	base .EQU AppBackUpScreen
+	number .EQU AppBackUpScreen + 2
+	result .EQU AppBackUpScreen + 6
+	
+	end

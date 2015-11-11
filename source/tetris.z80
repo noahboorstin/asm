@@ -1,0 +1,281 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+	.org 9D93h
+	.db $BB,$6D	
+	
+	B_CALL(_ClrLCDFull)
+	DI
+	LD HL, AppBackUpScreen
+	LD DE, AppBackUpScreen+1
+	LD (HL), 0
+	LD BC, 768
+	LDIR ;clears AppBackUpScreen
+	LD A, 7
+	OUT ($10), A
+Bottom:
+	LD HL, AppBackUpScreen
+	EXX
+	LD HL, pieces
+	LD DE, $2080 ;D is horizontal row, E if vertical
+	LD C, 0 ;C is shift
+Display:
+	PUSH HL
+	PUSH DE
+	RES 7, (IY+Asm_Flag1)
+	LD A, (HL) ;Display piece
+	EXX
+	LD B, A
+	EXX
+	INC HL
+	LD B, (HL)
+	INC HL
+	LD A, C
+	ADD A, (HL)
+	CP 9
+	JR C, NoCarry
+	SET 7, (IY+Asm_Flag1)
+NoCarry:
+	INC HL
+	LD E, (HL)
+	INC HL
+	LD D, (HL)
+	EX DE, HL
+	;HL is pointer to sprite data, B is  width%8+1 (don't change), A' is width%8 (changes)
+	;B' is height, C is shift, HL' is pointer to screen copy stuff
+	POP DE
+	PUSH DE
+	EXX
+NextLine2:
+	EXX
+	LD A, E
+	CP $80
+	JR C, OffScreen
+	OUT ($10), A
+	LD A, D
+	OUT ($10), A ;done setting coordinates
+	LD E, 0
+	LD A, B
+	EX AF, AF'
+Next8Pixels:
+	LD D, (HL)
+	LD A, C
+	CP 0
+	JR Z, DoneShift
+ShiftLoop:
+	SRL D
+	BIT 0, E
+	JR Z, Zero
+	SET 7, D
+Zero:
+	RR E
+	DEC A
+	JR NZ, ShiftLoop
+DoneShift:
+	LD A, D
+	EXX
+	OR (HL)
+	INC HL
+	EXX
+	OUT ($11), A
+	INC HL
+	EX AF, AF'
+	DEC A
+	JR Z, Done8Pixels
+	EX AF, AF'
+	LD A, 8
+	SUB C
+ShiftOther:
+	SRL E
+	DEC A
+	JR NZ, ShiftOther	
+	JR Next8Pixels
+Done8Pixels:
+	BIT 7, (IY+Asm_Flag1)
+	JR Z, OnScreen
+	LD A, E
+	OUT ($11), A
+	JR OnScreen
+OffScreen:
+	LD A, B
+OffScreen1:
+	INC HL
+	EXX
+	INC HL
+	EXX
+	DJNZ OffScreen1
+	LD B, A
+OnScreen:
+	LD A, 12 ;next row:
+	SUB B
+	LD B, A
+NextLine1:
+	EXX
+	INC HL
+	EXX
+	DJNZ NextLine1
+	ADD A, ~12
+	CPL
+	LD B, A
+	POP DE
+	INC E
+	PUSH DE
+	EXX
+	DJNZ NextLine2
+	POP DE
+	POP HL
+	LD A, E
+	SUB (HL)
+	LD E, A ;end display. HL is pointer to pieces data, DE and C are coordinates
+			;HL' points to BELOW the piece.
+Key:
+	;temporary:
+	RES 6, (IY+Asm_Flag1)
+	
+	;moving down:
+	IN A, ($32)
+	CP 0
+	JR Z, MoveDown
+	BIT 6, (IY+Asm_Flag1)
+	JR Z, Key
+MoveHL:
+	LD A, 12
+	INC HL
+	SUB (HL)
+	DEC HL
+	EXX
+	LD D, 0
+	LD E, A
+	SCF
+	SBC HL, DE
+	EXX
+	JP Display
+MoveDown:
+	;reset timer:
+	LD A, $47
+	OUT ($30), A
+	LD A, 0
+	OUT ($31), A
+	LD A, 16
+	OUT ($32), A
+	;check if done
+	;hl' should be below it
+	PUSH DE
+	PUSH HL
+	INC HL
+	LD B, (HL)
+	INC HL
+	INC HL
+	LD E, (HL)
+	INC HL
+	LD D, (HL)
+	EX DE, HL
+CheckDoneLoop:
+	LD A, (HL)
+	EXX
+	AND (HL)
+	JR NZ, Bottom1
+	INC HL
+	EXX
+	INC HL
+	DJNZ CheckDoneLoop
+	POP HL
+	POP DE
+	INC E
+	JR MoveHL
+Bottom1:
+	POP HL
+	POP HL
+	;dec hl' some amount
+	RET
+	
+	
+	JP Bottom
+	;timer thingy here with moving down
+	;check if need new piece
+		;check if game over
+	;before returning: reset stuff:
+		;lcd mode, crystal timer
+	RET 
+
+Pieces: ;height, width/8+1, width%8, pointer to data
+	.db 6, 1, 6
+	.dw Square
+	.db 12, 1, 3 ;vertical
+	.dw Line1
+	.db 3, 2, 4 ;horizontal
+	.dw Line2
+	.db 2, 2, 1
+	.dw J1
+	.db 3, 1, 6
+	.dw J2
+	.db 2, 2, 1
+	.dw J3
+	.db 3, 1, 6
+	.dw J4
+	;fill in rest of pieces here
+Square:
+	.db %11111100
+	.db %10110100
+	.db %11111100
+	.db %11111100
+	.db %10110100
+	.db %11111100
+Line1:
+	.db %11100000
+	.db %10100000
+	.db %11100000
+	.db %11100000
+	.db %10100000
+	.db %11100000
+	.db %11100000
+	.db %10100000
+	.db %11100000
+	.db %11100000
+	.db %10100000
+	.db %11100000
+Line2:
+	.db %11111111, %11110000
+	.db %10110110, %11010000
+	.db %11111111, %11110000
+J1:
+	.db %11100000, %00000000
+	.db %10100000, %00000000
+	.db %11100000, %00000000
+	.db %11111111, %10000000
+	.db %10110110, %10000000
+	.db %11111111, %10000000
+J2:
+	.db %11111100
+	.db %10110100
+	.db %11111100
+	.db %11100000
+	.db %10100000
+	.db %11100000
+	.db %11100000
+	.db %10100000
+	.db %11100000
+J3:
+	.db %11111111, %10000000
+	.db %10110110, %10000000
+	.db %11111111, %10000000
+	.db %00000011, %10000000
+	.db %00000010, %10000000
+	.db %00000011, %10000000
+J4:
+	.db %00011100
+	.db %00010100
+	.db %00011100
+	.db %00011100
+	.db %00010100
+	.db %00011100
+	.db %11111100
+	.db %10110100
+	.db %11111100
+;same for other pieces and their rotations
+
+end 

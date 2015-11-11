@@ -1,0 +1,16 @@
+.NOLIST
+#define AppName "test..:)"
+#include "ti83plus.inc"
+.LIST
+h:
+	jr h
+	in a, (6)
+	ld hl, hookstuff
+	rst 28h
+	.dw $4FE4 ;enable window hook
+	bjump(_JForceCmdNoChar) ;ret
+hookstuff:
+	.db 83h ;required for all hooks
+
+	ret
+	

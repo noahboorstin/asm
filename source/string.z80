@@ -1,0 +1,25 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+.LIST
+
+	.org 9D93h
+	.db $BB,$6D
+	LD HL, String1
+	B_CALL(_Mov9ToOP1)
+	B_CALL(_FindSym)
+	EX DE, HL
+	INC HL
+	INC HL	
+	B_CALL(_PutS) ; for some reason, also shows ≤ ($17) at the end...why?
+	;			   and, how to get rid of it?...or maybe not...
+
+	RET	
+	
+String1:
+	.DB StrngObj,tVarStrng,tStr1,0,0
+		
+	end

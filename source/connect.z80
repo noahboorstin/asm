@@ -1,0 +1,136 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+.LIST
+
+	.org 9D93h
+	.db $BB,$6D
+
+	B_CALL(_ClrLCDFull)
+	LD HL, 0
+	LD (CurRow), HL
+	LD HL, Line1
+	B_CALL(_PutS)
+	B_CALL(_NewLine)
+	LD HL, Line2
+	B_CALL(_PutS)
+	
+	LD HL, $0800
+	LD (CurRow), HL
+	LD HL, Off
+	B_CALL(_PutS)
+	LD HL, $0801
+	LD (CurRow), HL
+	LD HL, Off
+	B_CALL(_PutS)	
+	LD BC, 0
+	PUSH BC
+	
+Repeat:
+	B_CALL(_GetCSC)
+	CP skClear
+	JP Z, Done
+	CP sk1
+	JP Z, Toggle1
+	CP sk2
+	JP Z, Toggle2
+	JP Repeat
+Toggle1:	
+	POP BC
+	LD A, B
+	CP 1
+	JP Z, OneIsOn
+;1 is off
+	PUSH BC
+	LD HL, $0800
+	LD (CurRow), HL
+	LD HL, On
+	B_CALL(_PutS)
+	POP BC
+	LD B, 1
+	PUSH BC
+	LD A, C
+	CP 1
+	JP Z, OnOn
+	JP OnOff
+OneIsOn:
+	PUSH BC
+	LD HL, $0800
+	LD (CurRow), HL
+	LD HL, Off
+	B_CALL(_PutS)
+	POP BC
+	LD B, 0
+	PUSH BC
+	LD A, C
+	CP 1
+	JP Z, OffOn
+	JP OffOff
+	
+Toggle2:	
+	POP BC
+	LD A, C
+	CP 1
+	JP Z, TwoIsOn
+;2 is off
+	PUSH BC
+	LD HL, $0801
+	LD (CurRow), HL
+	LD HL, On
+	B_CALL(_PutS)
+	POP BC
+	LD C, 1
+	PUSH BC
+	LD A, B
+	CP 1
+	JP Z, OnOn
+	JP OffOn
+TwoIsOn:
+	PUSH BC
+	LD HL, $0801
+	LD (CurRow), HL
+	LD HL, Off
+	B_CALL(_PutS)
+	POP BC
+	LD C, 0
+	PUSH BC
+	Ld A, B
+	CP 1
+	JP Z, OnOff
+	JP OffOff
+OnOn:
+	LD A, D0LD1L
+	OUT (bport), A
+	JP Repeat
+OnOff:
+	LD A, D0LD1H
+	OUT (bport), A	
+	JP Repeat
+OffOn:
+	LD A, D0HD1L
+	OUT (bport), A
+	JP Repeat
+OffOff:
+	LD A, D0HD1H
+	OUT (bport), A
+	JP Repeat
+	
+Done:
+	LD A, D0HD1H
+	OUT (bport), A
+	POP BC
+    RET
+	
+Line1:
+	.DB "Line 1: ", 0
+Line2:
+	.DB "Line 2: ", 0
+On:
+	.DB "On ", 0
+Off:
+	.DB "Off", 0
+
+end

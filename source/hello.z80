@@ -1,0 +1,23 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+.LIST
+
+     .org 9D93h
+     .db $BB,$6D
+      B_CALL(_ClrLCDFull)
+      ld    hl, 0
+      ld    (PenCol), hl
+      ld    hl, msg
+      B_CALL(_PutS)            ; Display the text
+      B_CALL(_NewLine)
+    ret
+
+msg:
+      .db "Hello world!", 0
+     ret
+
+end

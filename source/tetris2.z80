@@ -1,0 +1,1220 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#include "ti83plus.inc"
+.LIST
+
+#define ArrowKeys $FE
+#define DownKey $FE
+#define LeftKey $FD
+#define RightKey $FB
+#define UpKey $F7
+
+	.org 9D93h
+	.db $BB,$6D	
+	
+	rst 28h
+	.dw _ClrLCDFull
+	DI
+	LD HL, $1F38
+    LD  (PenCol), HL
+	LD A, $30
+	RST 28h
+	.dw _VPutMap
+RandomNum1:
+	LD A, R
+	AND %00000111
+	CP 7
+	JR Z, RandomNum1
+	LD (AppBackUpScreen+257), A
+	XOR A
+	LD (AppBackUpScreen+258), A
+	LD (AppBackUpScreen+259), A
+	; IN A, ($20)
+	; PUSH AF
+	; LD A, 1
+	; OUT ($20), A
+	LD A, $47
+	OUT ($30), A
+	LD A, 0
+	OUT ($31), A
+	LD A, 4
+	OUT ($32), A
+	RES 6, (IY+Asm_Flag1)
+	RES 1, (IY+Asm_Flag1)
+	RES 0, (IY+Asm_Flag1)
+	RES 7, (IY+Asm_Flag2)
+	LD HL, AppBackUpScreen
+	LD DE, AppBackUpScreen+1
+	LD (HL), 0
+	LD BC, 256 ;4*64
+	LDIR ;clears first chunck of AppBackUpScreen
+	LD A, $20
+	CALL LCDDelay
+	OUT ($10), A
+	LD A, $80
+	CALL LCDDelay
+	OUT ($10), A
+	LD A, %10000000
+	LD HL, AppBackUpScreen
+	LD B, 63
+LeftLineLoop:
+	CALL LCDDelay
+	OUT ($11), A
+	LD (HL), A
+	INC HL
+	INC HL
+	INC HL
+	LD (HL), %00000001
+	INC HL
+	DJNZ LeftLineLoop
+	LD A, $23
+	CALL LCDDelay
+	OUT ($10), A
+	LD A, $80
+	CALL LCDDelay
+	OUT ($10), A	
+	LD B, 63
+	LD A, %00000001
+RightLineLoop:
+	CALL LCDDelay
+	OUT ($11), A
+	DJNZ RightLineLoop
+	
+	LD A, 7
+	CALL LCDDelay
+	OUT ($10), A
+	LD A, $20
+	CALL LCDDelay
+	OUT ($10), A
+	LD A, $BF
+	CALL LCDDelay
+	OUT ($10), A
+	LD B, 4
+	LD A, $FF
+FirstLine:
+	LD (HL), A
+	INC HL
+	CALL LCDDelay
+	OUT ($11), A
+	DJNZ FirstLine
+NewPiece:
+	LD HL, AppBackUpScreen
+	EXX
+Random:
+	;clear next piece section: (2*12)
+	LD DE, $2989
+	LD B, 12
+RandomClearLoop:
+	LD A, D
+	CALL LCDDelay
+	OUT ($10), A
+	LD A, E
+	CALL LCDDelay
+	OUT ($10), A
+	XOR A
+	CALL LCDDelay
+	OUT ($11), A
+	CALL LCDDelay
+	OUT ($11), A
+	INC E
+	DJNZ RandomClearLoop	
+	;done clear
+	LD A, (AppBackUpScreen+257)
+	LD (AppBackUpScreen+256), A
+RandomNum:
+	LD A, R
+	AND %00000111
+	CP 7
+	JR Z, RandomNum
+	
+	;showing next piece:
+	LD (AppBackUpScreen+257), A
+	SET 6, (IY+Asm_Flag2)
+	JR Random2
+Random3:
+	RES 6, (IY+Asm_Flag2)
+	LD A, (AppBackUpScreen+256)
+Random2:	
+	ADD A, A
+	LD H, 0
+	LD L, A
+	LD DE, RandomTable
+	ADD HL, DE
+	LD E, (HL)
+	INC HL
+	LD D, (HL)
+	EX DE, HL
+;	LD HL, Line1Data ;testing
+	BIT 6, (IY+Asm_Flag2)
+	JR NZ, Random4
+	LD DE, $2080 ;D is horizontal row, E if vertical
+	JR Random5
+Random4:
+	LD DE, $2989
+Random5:
+	LD C, 1 ;C is shift
+Display:
+	EXX
+DisplayEXX:
+	PUSH HL
+	EXX
+	PUSH HL
+	PUSH DE
+CarryFlag:
+	RES 7, (IY+Asm_Flag1)
+	LD A, (HL) ;Display piece
+	EXX
+	LD B, A
+	EXX
+	INC HL
+	LD B, (HL)
+	INC HL
+	LD A, C
+	ADD A, (HL)
+	CP 9
+	JR C, NoCarry
+	SET 7, (IY+Asm_Flag1)
+NoCarry:
+	BIT 0, (IY+Asm_Flag1)
+	JR Z, NoCarry1
+	DEC HL
+	DEC HL
+	RES 0, (IY+Asm_Flag1)
+	RET
+NoCarry1:
+	INC HL
+	LD E, (HL)
+	INC HL
+	LD D, (HL)
+	EX DE, HL
+	;HL is pointer to sprite data, B is  width%8+1 (don't change), A' is width%8 (changes)
+	;B' is height, C is shift, HL' is pointer to screen copy stuff
+	POP DE
+	PUSH DE
+NextLine2:
+	LD A, E
+;	CP $80
+;	JP C, OffScreen
+	BIT 6, (IY+Asm_Flag1)
+	JR NZ, SkipDisp1
+	BIT 1, (IY+Asm_Flag1)
+	JR NZ, SkipDisp1
+	CALL LCDDelay
+	OUT ($10), A
+	LD A, D
+	CALL LCDDelay
+	OUT ($10), A ;done setting coordinates
+SkipDisp1:
+	LD E, 0
+	LD A, B
+	EX AF, AF' ;'
+Next8Pixels:
+	LD D, (HL)
+	LD A, C
+	CP 0
+	JR Z, DoneShift
+ShiftLoop:
+	SRL D
+	BIT 0, E
+	JR Z, Zero
+	SET 7, D
+Zero:
+	RR E
+	DEC A
+	JR NZ, ShiftLoop
+DoneShift:
+	LD A, D
+	EXX
+	BIT 1, (IY+Asm_Flag1)
+	JR Z, SkipDisp10
+	AND (HL)
+	JP Z, CheckOk1
+	EXX
+	POP DE
+	POP HL
+	EXX
+	POP HL
+	EXX
+	SCF
+	RES 1, (IY+Asm_Flag1)
+	RET
+CheckOk1:
+	INC HL
+	EXX
+	JR SkipDisp3
+SkipDisp10:
+	BIT 6, (IY+Asm_Flag2)
+	JR NZ, RandomDisp0
+	OR (HL)
+RandomDisp0:
+	BIT 6, (IY+Asm_Flag1)
+	JR Z, SkipDisp2
+	LD (HL), A
+	INC HL
+	EXX
+	JR SkipDisp3
+SkipDisp2:
+	INC HL
+	EXX
+	CALL LCDDelay
+	OUT ($11), A
+SkipDisp3:
+	INC HL
+	EX AF, AF'
+	DEC A
+	JR Z, Done8Pixels
+	EX AF, AF'
+	LD A, 8
+	SUB C
+ShiftOther:
+	SRL E
+	DEC A
+	JR NZ, ShiftOther	
+	JR Next8Pixels
+Done8Pixels:
+	BIT 7, (IY+Asm_Flag1)
+	JR Z, OnScreen
+	LD A, E
+	EXX
+	BIT 1, (IY+Asm_Flag1)
+	JR Z, SkipDisp11
+	AND (HL)
+	JP Z, CheckOk0
+	EXX
+	POP DE
+	POP HL
+	EXX
+	POP HL
+	EXX
+	SCF
+	RES 1, (IY+Asm_Flag1)
+	RET
+CheckOk0:
+	EXX
+	JR OnScreen
+SkipDisp11:
+	BIT 6, (IY+Asm_Flag2)
+	JR NZ, RandomDisp1
+	OR (HL)
+RandomDisp1:
+	BIT 6, (IY+Asm_Flag1)
+	JR Z, SkipDisp4
+	LD (HL), A
+	EXX
+	JR OnScreen
+SkipDisp4:
+	EXX
+	CALL LCDDelay
+	OUT ($11), A
+	; JR OnScreen
+; OffScreen:
+	; LD A, B
+; OffScreen1:
+	; INC HL
+	; EXX
+	; INC HL
+	; EXX
+	; DJNZ OffScreen1
+	; LD B, A
+OnScreen:
+	LD A, 4 ;next row:
+	SUB B
+	LD B, A
+NextLine1:
+	EXX
+	INC HL
+	EXX
+	DJNZ NextLine1
+	
+	ADD A, ~4
+	CPL
+	LD B, A
+	POP DE
+	BIT 1, (IY+Asm_Flag1)
+	JR NZ, SkipDisp13
+	INC E
+SkipDisp13:
+	PUSH DE	
+	EXX
+	DJNZ ExtraRange
+	JR SkipExtraRange
+ExtraRange:
+	EXX
+	JP NextLine2
+SkipExtraRange:
+	EXX
+	POP DE
+	POP HL
+	BIT 6, (IY+Asm_Flag1)
+	JP Z, SkipDisp5
+	RES 6, (IY+Asm_Flag1)
+	EXX
+	POP HL
+	EXX
+	;clear lines
+	LD C, (HL) ;find a better way to divide by 3?
+	XOR A
+	LD B, A
+DivisionLoop:
+	ADD A, 3
+	INC B
+	CP C
+	JR NZ, DivisionLoop
+	LD A, D
+	SUB $20
+	EXX
+	LD D, 0
+	LD E, A
+	OR A
+	SBC HL, DE
+	LD A, $FF
+	LD DE, 12
+	EXX
+FinalCheck1:
+	EXX
+	PUSH HL
+	LD B, 4 ;change if width changes!!
+FinalCheck0:
+	CP (HL)
+	JR NZ, FinalCheckFailed0
+	INC HL
+	DJNZ FinalCheck0
+	LD A, (AppBackUpScreen+258)
+	INC A
+	CP 10
+	JR NZ, NoNewLevel
+	;next level
+	LD A, (AppBackUpScreen+259)
+	INC A
+	LD (AppBackUpScreen+259), A
+	PUSH DE	;displaying level:
+	PUSH HL
+	CP 10
+	JR C, SecondDigit
+	PUSH AF
+LevelDisplaySub:
+	SUB 10
+	JR NC, LevelDisplaySub
+	ADD A, 10
+	LD B, A
+	PUSH BC
+	ADD A, $30
+	RST 28h
+	.dw _VPutMap
+	POP BC
+	POP AF
+	SUB B
+	LD B, $FF
+LevelDisplaySub1:
+	SUB 10
+	INC B
+	JR NC, LevelDisplaySub1
+	LD A, B
+SecondDigit:
+	ADD A, $30
+	LD HL, $1F38 ;(?)
+    LD (PenCol), HL
+	RST 28h
+	.dw _VPutMap
+	LD A, 7
+	CALL LCDDelay
+	OUT ($10), A
+	POP HL
+	POP DE
+	XOR A
+NoNewLevel:
+	LD (AppBackUpScreen+258), A
+	LD A, $FF
+	;moving down a line
+	SET 0, (IY+Asm_Flag1)
+	POP HL
+	PUSH HL
+	DEC HL
+;	LD DE, 36
+;	ADD HL, DE
+	LD DE, $9872
+	OR A
+	SBC HL, DE
+	LD B, H
+	LD C, L
+	POP HL
+	PUSH HL
+	DEC HL
+;	LD DE, 36
+;	ADD HL, DE
+	LD DE, 12
+	EX DE, HL
+	ADD HL, DE
+	EX DE, HL
+	LDDR
+	LD DE, 12
+	;move down
+FinalCheckFailed0
+	POP HL
+
+	ADD HL, DE
+	EXX
+	DJNZ FinalCheck1
+	BIT 0, (IY+Asm_Flag1)
+	JP Z, NewPiece
+	RES 0, (IY+Asm_Flag1) ;display again
+	LD HL, AppBackUpScreen
+	LD D, $80
+	LD A, D
+ClearLCDLoop0:
+	INC D
+	CALL LCDDelay
+	OUT ($10), A
+	LD A, $20
+	CALL LCDDelay
+	OUT ($10), A
+	LD B, 4
+ClearLCDLoop1:
+	LD A, (HL)
+	CALL LCDDelay
+	OUT ($11), A
+	INC HL
+	DJNZ ClearLCDLoop1
+	LD A, D
+	CP $C0
+	JR NZ, ClearLCDLoop0
+	JP NewPiece
+SkipDisp5:
+	BIT 1, (IY+Asm_Flag1)
+	JR Z, SkipDisp12
+	EXX
+	POP HL
+	EXX
+	RES 1, (IY+Asm_Flag1)
+;	SET 0, (IY+Asm_Flag1)
+	OR A
+	RET
+SkipDisp12:
+	LD A, E ;reseting E and HL'
+	SUB (HL)
+	LD E, A 
+	EXX
+	POP HL
+	EXX
+	BIT 7, (IY+Asm_Flag2)
+	JP NZ, DownNeedNewPiece
+	BIT 6, (IY+Asm_Flag2)
+	JP NZ, Random3
+	;end display. HL is pointer to pieces data, DE and C are coordinates
+	;HL' points to the piece.
+	RES 5, (IY+Asm_Flag1)
+;some delay here...
+	LD B, $FF
+KeyDelayLoop:
+	rst 28h
+	.dw _LCD_BUSY
+	rst 28h
+	.dw _LCD_BUSY
+	DJNZ KeyDelayLoop
+	RES 3, (IY+Asm_Flag1)
+	RES 2, (IY+Asm_Flag1)	
+Key:
+	LD A, $FD
+	OUT (1), A
+	IN A, (1)
+	CP $BF
+	JR NZ, NotClearKey
+	LD B, $FF
+KeyDelayLoop1:
+	rst 28h
+	.dw _LCD_BUSY
+	rst 28h
+	.dw _LCD_BUSY
+	DJNZ KeyDelayLoop1	
+	LD A, $FD
+	OUT (1), A
+PauseLoop:
+	IN A, (4)
+	BIT 0, A
+	RET NZ
+	IN A, (1)
+	CP $BF
+	JR NZ, PauseLoop
+NotClearKey:
+	LD A, $EF
+	OUT (1), A
+	IN A, (1)
+	CP $D0 ;0 1 4 7 sin(
+	JR NZ, NotCheatKey
+	LD A, 9
+	LD (AppBackUpScreen+258), A
+NotCheatKey:
+	LD A, $FF
+	OUT (1), A
+	NOP 
+	NOP
+	NOP
+	LD A, ArrowKeys
+	OUT (1), A
+	IN A, (1)
+	CP RightKey
+	JP NZ, NotRightKey
+	LD A, C ;move right
+	ADD A, 3
+	LD C, A
+	SUB 8
+	JR C, RightFine
+	LD C, A
+	INC D
+	EXX
+	INC HL
+	EXX
+RightFine:
+	SET 1, (IY+Asm_Flag1)
+	CALL Display
+	JR NC, CanMoveRight
+	LD A, C
+	SUB 3
+	LD C, A
+	JR NC, NoRightFine
+	ADD A, 8
+	LD C, A
+	DEC D
+	EXX
+	DEC HL
+	EXX
+NoRightFine:
+	SET 0, (IY+Asm_Flag1)
+	CALL CarryFlag
+	JP DoneKey
+CanMoveRight:
+	SET 5, (IY+Asm_Flag1) 
+	SET 4, (IY+Asm_Flag1)
+	LD A, C
+	CP 3
+	JP NC, DoneKey
+	DEC D
+	SET 3, (IY+Asm_Flag1)
+	EXX
+;	INC HL
+	PUSH HL
+	DEC HL
+	EXX
+	LD C, A
+KeyMove:
+	LD A, 5
+	CALL LCDDelay
+	OUT ($10), A
+	LD A, D
+	CALL LCDDelay
+	OUT ($10), A
+	LD A, E
+	CALL LCDDelay
+	OUT ($10), A
+	LD A, (HL)
+	EXX
+	LD DE, 4
+;	PUSH HL
+	LD B, A
+RightKeyClear:
+	LD A, (HL)
+	CALL LCDDelay
+	OUT ($11), A
+	ADD HL, DE
+	DJNZ RightKeyClear
+	POP HL
+	EXX
+	BIT 4, (IY+Asm_Flag1)
+	JR Z, MoveLeft
+	INC D
+	RES 4, (IY+Asm_Flag1)
+	JR MoveRight
+MoveLeft:
+	POP DE
+MoveRight:
+	LD A, 7
+	CALL LCDDelay
+	OUT ($10), A
+	JP DoneKey
+NotRightKey:
+	CP LeftKey
+	JP NZ, NotLeftKey
+	RES 4, (IY+Asm_Flag1)
+	LD A, C ;move left
+	SUB 3
+	LD C, A
+	JR NC, LeftFine
+	ADD A, 8
+	LD C, A
+	DEC D
+	EXX
+	DEC HL
+	EXX
+LeftFine:
+	SET 1, (IY+Asm_Flag1)
+	CALL Display
+	JR C, LeftOther
+	SET 4, (IY+Asm_Flag1)
+LeftOther:
+;	JR NC, CanMoveLeft
+	LD A, C
+	ADD A, 3
+	LD C, A
+	SUB 8
+	JR C, NoLeftFine
+		LD C, A
+	INC D
+	EXX
+	INC HL
+	EXX
+NoLeftFine:
+	SET 0, (IY+Asm_Flag1)
+	CALL CarryFlag
+	BIT 4, (IY+Asm_Flag1)
+	JP Z, DoneKey
+	RES 4, (IY+Asm_Flag1)
+CanMoveLeft:
+	SET 5, (IY+Asm_Flag1) ;move left
+	INC HL
+	INC HL
+	LD A, (HL)
+	DEC HL
+	ADD A, C
+	DEC A
+	SUB 8
+	JR NC, LeftAdd8
+	ADD A, 8
+LeftAdd8:
+	DEC HL
+	; CP 3
+	; JR C, DoneLeftShiftDiv
+	; SUB 8
+; DoneLeftShiftDiv:
+	SET 4, (IY+Asm_Flag1)
+	CP 3
+	JR NC, DontEraseLeftShift
+	RES 4, (IY+Asm_Flag1) ;res if need to erase
+DontEraseLeftShift:
+	LD A, C
+	SUB 3
+	JR NC, NotLeftKey1
+	ADD A, 8
+	DEC D
+	SET 2, (IY+Asm_Flag1)
+	EXX
+	DEC HL
+	EXX
+NotLeftKey1:
+	LD C, A
+	BIT 4, (IY+Asm_Flag1)
+	JP NZ, DoneKey
+	PUSH DE
+	INC HL ;moving D for clear
+	LD A, (HL)
+	DEC HL
+	ADD A, D
+	LD B, D
+	BIT 7, (IY+Asm_Flag1)
+	JR NZ, DontIncLeftKey
+	DEC A
+DontIncLeftKey:
+	LD D, A
+	LD A, C
+	CP 5
+	JR C, LeftOkay
+	INC D
+LeftOkay:
+	LD A, D
+	SUB B
+	EXX
+	PUSH HL
+	LD B, A
+;	INC B
+LeftAdjustHL:
+	INC HL
+	DJNZ LeftAdjustHL
+	EXX
+	JP KeyMove	
+NotLeftKey:
+	CP DownKey
+	JR NZ, NotDownKey
+	IN A, (4) ;not sure why this is necessary
+	JP MoveDown
+NotDownKey:
+	CP UpKey
+	JR NZ, DoneKey
+	LD A, L
+;	CP $6D
+;	JR Z, DoneKey
+	PUSH HL
+	PUSH DE
+	LD DE, 5
+	ADD HL, DE
+	LD E, (HL)
+	INC HL
+	LD D, (HL)
+	EX DE, HL
+	SET 1, (IY+Asm_Flag1)
+	POP DE
+	CALL Display
+	JR NC, DownFine
+	POP HL
+	SET 0, (IY+Asm_Flag1)
+	CALL CarryFlag
+	JR DoneKey
+DownFine:
+	POP HL
+	SET 0, (IY+Asm_Flag1)
+	CALL CarryFlag
+	SET 5, (IY+Asm_Flag1) ;rotate piece
+	
+	
+	
+	;clear
+	PUSH DE
+	LD B, (HL)
+	INC HL
+	LD A, (HL)
+	EXX
+	PUSH HL
+	LD C, A
+	BIT 7, (IY+Asm_Flag1)
+	JR Z, UpDontAddOne
+	INC C
+UpDontAddOne:
+	LD A, 4
+	SUB C
+	LD D, 0
+	LD E, A
+	EXX
+	INC HL
+	INC HL
+	INC HL
+	INC HL
+UpClearPiece0:
+	LD A, D
+	CALL LCDDelay
+	OUT ($10), A
+	LD A, E
+	CALL LCDDelay
+	OUT ($10), A
+	EXX
+	LD B, C
+UpClearPiece1:
+	LD A, (HL)
+	INC HL
+	CALL LCDDelay
+	OUT ($11), A
+	DJNZ UpClearPiece1
+	ADD HL, DE
+	EXX
+	INC E
+	DJNZ UpClearPiece0
+	EXX
+	POP HL
+	EXX
+	LD E, (HL)
+	INC HL
+	LD D, (HL)
+	EX DE, HL	
+	POP DE
+DoneKey:
+	;end keys. bit 5 is set if needs to be displayed again
+	
+	;move down:
+	;clear above:
+	IN A, (4)
+	BIT 0, A
+	RET NZ
+;	JP NZ, EndProgram ;enabling ERR:BREAK
+	BIT 5, A
+	JR NZ, MoveDown
+	BIT 5, (IY+Asm_Flag1)
+	JP Z, Key
+	JP Display
+MoveDown:	
+	LD A, $46
+	OUT ($30), A
+	LD A, 0
+	OUT ($31), A
+	LD A, (AppBackUpScreen+259)
+	CP 29
+	JR NC, Delay29
+	PUSH HL
+	PUSH DE
+	LD HL, DelayTable
+	LD D, 0
+	LD E, A
+	ADD HL, DE
+	LD A, (HL)
+	POP DE
+	POP HL
+	JR Delay291
+Delay29:
+	LD A, 2
+Delay291:
+	OUT ($32), A
+	
+	;check:
+	SET 1, (IY+Asm_Flag1)
+	EXX
+	LD DE, 4
+	ADD HL, DE
+	CALL DisplayEXX
+	JR NC, NoNewPiece
+	LD A, E
+	CP $81
+	RET C
+	EXX
+	LD DE, 4
+	OR A
+	SBC HL, DE
+	EXX
+;	JR C, EndProgram
+	BIT 5, (IY+Asm_Flag1)
+	JR Z, DownNeedNewPiece
+	SET 7, (IY+Asm_Flag2)
+	JP Display
+DownNeedNewPiece:
+	RES 7, (IY+Asm_Flag2)
+	SET 6, (IY+Asm_Flag1)
+	JP Display	
+NoNewPiece:
+	EXX
+	LD DE, 4
+	OR A
+	SBC HL, DE
+	EXX
+	SET 0, (IY+Asm_Flag1)
+	CALL CarryFlag
+	
+	
+	;extra erase:
+	BIT 3, (IY+Asm_Flag1)
+	JR Z, DownCheckBit2
+	LD A, D
+	DEC A
+	EXX
+	PUSH HL
+	DEC HL
+ExtraClear:	
+	LD DE, 4
+	CALL LCDDelay
+	OUT ($10), A
+	EXX
+	LD A, E
+	CALL LCDDelay
+	OUT ($10), A
+	EXX
+	LD A, 5
+	CALL LCDDelay
+	OUT ($10), A
+	LD B, 3
+ExtraClearLoop:
+	LD A, (HL)
+	CALL LCDDelay
+	OUT ($11), A
+	ADD HL, DE
+	DJNZ ExtraClearLoop
+	POP HL
+	EXX
+	LD A, 7
+	CALL LCDDelay
+	OUT ($10), A
+	JR ClearAbove
+DownCheckBit2:
+	BIT 2, (IY+Asm_Flag1)
+	JR Z, ClearAbove
+	LD A, D
+	INC A
+	EXX
+	PUSH HL
+	INC HL
+	JR ExtraClear
+ClearAbove:
+	INC HL ;move down
+	LD A, (HL)
+	DEC HL
+	BIT 7, (IY+Asm_Flag1)
+	JR Z, DontAddOne
+	INC A
+DontAddOne:
+	EXX
+	LD C, A
+	LD D, 0
+	ADD A, ~4
+	CPL
+	LD E, A
+	EXX
+	LD B, 3
+ClearLoop1:
+	LD A, D
+	CALL LCDDelay
+	OUT ($10), A
+	LD A, E
+	CALL LCDDelay
+	OUT ($10), A
+	EXX
+	LD B, C
+ClearLoop0:
+	LD A, (HL)
+	INC HL
+	CALL LCDDelay
+	OUT ($11), A
+	DJNZ ClearLoop0
+	ADD HL, DE
+	EXX
+	INC E
+	DJNZ ClearLoop1
+	EXX
+	LD B, C
+	JP DisplayEXX
+; EndProgram:
+	; POP AF
+	; OUT ($20), A
+	; RET
+LCDDelay:
+	PUSH AF
+;	PUSH BC
+;	PUSH DE
+;	PUSH HL
+;	LD B, $FF
+LcdDelayLoop:
+	rst 28h
+	.dw _LCD_BUSY
+;	DJNZ LcdDelayLoop
+;	POP HL
+;	POP DE
+;	POP BC
+	POP AF
+	RET
+DelayTable:
+	.db 102, 92, 81, 70, 60, 49, 38, 28, 17, 13, 11, 11, 11, 9, 9, 9, 6, 6, 6, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4
+RandomTable:
+	.dw SquareData
+	.dw Line1Data
+	.dw Z1Data
+	.dw S1Data
+	.dw J1Data
+	.dw T1Data
+	.dw L1Data
+;Pieces: height, width/8+1, width%8, pointer to data, pointer to next piece
+SquareData:
+	.db 6, 1, 6
+	.dw Square, SquareData
+Line1Data:
+	.db 12, 1, 3 ;vertical
+	.dw Line1, Line2Data
+Line2Data:
+	.db 3, 2, 4 ;horizontal
+	.dw Line2, Line1Data
+Z1Data:
+	.db 6, 2, 1
+	.dw ZZ1, Z2Data
+Z2Data:
+	.db 9, 1, 6
+	.dw ZZ2, Z1Data
+S1Data:
+	.db 6, 2, 1
+	.dw SS1, S2Data
+S2Data:
+	.db 9, 1, 6
+	.dw SS2, S1Data
+J1Data:
+	.db 6, 2, 1
+	.dw J1, J2Data
+J2Data:
+	.db 9, 1, 6
+	.dw J2, J3Data
+J3Data:
+	.db 6, 2, 1
+	.dw J3, J4Data
+J4Data:
+	.db 9, 1, 6
+	.dw J4, J1Data
+T1Data:
+	.db 6, 2, 1
+	.dw TT1, T2Data
+T2Data:
+	.db 9, 1, 6
+	.dw TT2, T3Data
+T3Data:
+	.db 6, 2, 1
+	.dw TT3, T4Data
+T4Data:
+	.db 9, 1, 6
+	.dw TT4, T1Data
+L1Data:
+	.db 6, 2, 1
+	.dw LL1, L4Data
+L2Data:
+	.db 9, 1, 6
+	.dw LL2, L1Data
+L3Data:
+	.db 6, 2, 1
+	.dw LL3, L2Data
+L4Data:
+	.db 9, 1, 6
+	.dw LL4, L3Data
+
+	;fill in rest of pieces here
+Square:
+	.db %11111100
+	.db %10110100
+	.db %11111100
+	.db %11111100
+	.db %10110100
+	.db %11111100
+Line1:
+	.db %11100000
+	.db %10100000
+	.db %11100000
+	.db %11100000
+	.db %10100000
+	.db %11100000
+	.db %11100000
+	.db %10100000
+	.db %11100000
+	.db %11100000
+	.db %10100000
+	.db %11100000
+Line2:
+	.db %11111111, %11110000
+	.db %10110110, %11010000
+	.db %11111111, %11110000
+ZZ1:
+	.db %11111100, %00000000
+	.db %10110100, %00000000
+	.db %11111100, %00000000
+	.db %00011111, %10000000
+	.db %00010110, %10000000
+	.db %00011111, %10000000
+ZZ2:
+	.db %00011100
+	.db %00010100
+	.db %00011100
+	.db %11111100
+	.db %10110100
+	.db %11111100
+	.db %11100000
+	.db %10100000
+	.db %11100000
+SS2:
+	.db %11100000
+	.db %10100000
+	.db %11100000
+	.db %11111100
+	.db %10110100
+	.db %11111100
+	.db %00011100
+	.db %00010100
+	.db %00011100
+SS1:
+	.db %00011111, %10000000
+	.db %00010110, %10000000
+	.db %00011111, %10000000
+	.db %11111100, %00000000
+	.db %10110100, %00000000
+	.db %11111100, %00000000
+J1:
+	.db %11100000, %00000000
+	.db %10100000, %00000000
+	.db %11100000, %00000000
+	.db %11111111, %10000000
+	.db %10110110, %10000000
+	.db %11111111, %10000000
+J2:
+	.db %11111100
+	.db %10110100
+	.db %11111100
+	.db %11100000
+	.db %10100000
+	.db %11100000
+	.db %11100000
+	.db %10100000
+	.db %11100000
+J3:
+	.db %11111111, %10000000
+	.db %10110110, %10000000
+	.db %11111111, %10000000
+	.db %00000011, %10000000
+	.db %00000010, %10000000
+	.db %00000011, %10000000
+J4:
+	.db %00011100
+	.db %00010100
+	.db %00011100
+	.db %00011100
+	.db %00010100
+	.db %00011100
+	.db %11111100
+	.db %10110100
+	.db %11111100
+TT1:
+	.db %11111111, %10000000
+	.db %10110110, %10000000
+	.db %11111111, %10000000
+	.db %00011100, %00000000
+	.db %00010100, %00000000
+	.db %00011100, %00000000
+TT2:
+	.db %11100000
+	.db %10100000
+	.db %11100000
+	.db %11111100
+	.db %10110100
+	.db %11111100
+	.db %11100000
+	.db %10100000
+	.db %11100000
+TT3:
+	.db %00011100, %00000000
+	.db %00010100, %00000000
+	.db %00011100, %00000000
+	.db %11111111, %10000000
+	.db %10110110, %10000000
+	.db %11111111, %10000000
+TT4:
+	.db %00011100
+	.db %00010100
+	.db %00011100
+	.db %11111100
+	.db %10110100
+	.db %11111100
+	.db %00011100
+	.db %00010100
+	.db %00011100
+LL1:
+	.db %00000011, %10000000
+	.db %00000010, %10000000
+	.db %00000011, %10000000
+	.db %11111111, %10000000
+	.db %10110110, %10000000
+	.db %11111111, %10000000
+LL2:
+	.db %11111100
+	.db %10110100
+	.db %11111100
+	.db %00011100
+	.db %00010100
+	.db %00011100
+	.db %00011100
+	.db %00010100
+	.db %00011100
+LL3:
+	.db %11111111, %10000000
+	.db %10110110, %10000000
+	.db %11111111, %10000000
+	.db %11100000, %00000000
+	.db %10100000, %00000000
+	.db %11100000, %00000000
+LL4:
+	.db %11100000
+	.db %10100000
+	.db %11100000
+	.db %11100000
+	.db %10100000
+	.db %11100000
+	.db %11111100
+	.db %10110100
+	.db %11111100
+
+;same for other pieces and their rotations
+
+end 

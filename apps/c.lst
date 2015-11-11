@@ -1,0 +1,29 @@
+    5 00:4080 -  -  -  -  
+    6 00:4080 DB 06 -  -  	in a, (6)
+    7 00:4082 21 8D 40 -  	ld hl, hookstuff
+    8 00:4085 EF -  -  -  	rst 28h
+    9 00:4086 B1 4F -  -  	.dw $4FB1 ;enable window hook
+   10 00:4088 CD 50 00 27 
+              40 -  -  -  	bjump(_JForceCmdNoChar) ;ret
+   11 00:408D -  -  -  -  hookstuff:
+   12 00:408D 83 -  -  -  	.db 83h ;required for all hooks
+   13 00:408E FE 04 -  -  	cp 4
+   14 00:4090 28 02 -  -  	jr z, stay
+   15 00:4092 BF -  -  -  	cp a
+   16 00:4093 C9 -  -  -  	ret
+   17 00:4094 -  -  -  -  stay:
+   18 00:4094 18 FE -  -  	jr stay
+   19 00:4096 -  -  -  -  	;ld hl, msg+20
+   20 00:4096 EF -  -  -  	rst 28h
+   21 00:4097 0A 45 -  -  	.dw _PutS
+   22 00:4099 -  -  -  -  
+   23 00:4099 EF -  -  -  	rst 28h
+   24 00:409A 2E 45 -  -  	.dw _NewLine
+   25 00:409C -  -  -  -  	
+   26 00:409C F6 01 -  -  	or 1h
+   27 00:409E C9 -  -  -  	ret
+   28 00:409F -  -  -  -  msg:
+   29 00:409F 57 4F 4E 44 
+              4F 53 00 -  	.db "WONDOS", 0
+   30 00:40A6 -  -  -  -  	
+   31 00:40A6 -  -  -  -  	

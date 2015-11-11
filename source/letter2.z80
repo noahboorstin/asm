@@ -1,0 +1,20 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+
+	.org 9D93h
+	.db $BB,$6D
+	
+	LD A, $15
+	OUT (6), A
+	LD A, $1D
+	OUT (6), A
+	LD A, $1F
+	OUT (6), A
+	RET
+	
+end 

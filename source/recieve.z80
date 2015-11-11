@@ -1,0 +1,73 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+.LIST
+
+	.org 9D93h
+	.db $BB,$6D
+	
+	;initial recieve here: loads into RecieveLength
+WaitBegin:
+	IN A, (bport)
+	CP D0HD1L
+	JP NZ, WaitBegin
+	
+	;test:
+	LD BC, 2 ;DELETE FOR FINAL PROGRAM (sets length to 2)
+	
+	LD (RecieveLength), BC
+	LD B, A
+	CP 2
+	JP NC, Error
+	
+	LD HL, String1
+	B_CALL(_Mov9ToOP1)
+	B_CALL(_FindSym)
+	B_CALL(_DelVar)
+	LD HL, String1
+	B_CALL(_Mov9ToOP1)
+	LD HL, (RecieveLength)
+	B_CALL(_CreateStrng)
+	LD HL, String1     ;this and
+	B_CALL(_Mov9ToOP1) ;this are probably redundant, but just to make sure...
+	B_CALL(_FindSym)   ;and this also
+	INC DE
+	INC DE 
+	PUSH DE ;DE is now pointer to start of Str1 (in stack)
+Recieve:
+	;other recieve here, into register B (why not?)
+	
+	;test:
+	LD B, $57 ;DELETE FOR FINAL PROGRAM (sets string to 'WW')
+	
+	
+	POP HL
+	LD (HL), B
+	INC HL
+	PUSH HL
+	LD BC, (RecieveLength)
+	DEC BC
+	LD (RecieveLength), BC
+	LD A, C
+	CP 0
+	JP NZ, Recieve
+	LD A, B
+	CP 0
+	JP NZ, Recieve
+;Done:	
+	POP HL
+	RET
+Error:
+	LD HL, 0
+	LD (CurRow), HL
+	LD HL, ErrorTxt
+
+String1:
+	.DB StrngObj,tVarStrng,tStr1,0,0
+RecieveLength .EQU AppBackUpScreen + 8
+ErrorTxt .DB "Overflow"
+	
+end

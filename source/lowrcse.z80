@@ -1,0 +1,65 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+.LIST
+
+	.org 9D93h
+	.db $BB,$6D
+	
+	B_CALL(_ClrLCDFull)
+	B_CALL(_RunIndicOff)
+
+	ld A, 0
+	ld (PenCol), A
+	ld hl, Line0
+	B_CALL(_PutS)
+	B_CALL(_NewLine)
+	
+	ld A, 1
+	ld (PenCol), A
+	ld hl, Line1
+	B_CALL(_PutS)
+	B_CALL(_NewLine)
+
+	ld A, 2
+	ld (PenCol), A
+	ld hl, Line2
+	B_CALL(_PutS)
+	B_CALL(_NewLine)
+
+Wait:
+	B_CALL(_GetKeyRetOff)
+	CP $8F
+	JR Z, One
+	CP $90
+	JR Z, Two
+	JR Wait
+
+One:
+	RES LwrCaseActive, (IY + AppLwrCaseFlag)
+	JR End
+Two:
+	SET LwrCaseActive, (IY + AppLwrCaseFlag)
+	JR End
+	
+End:
+	B_CALL(_RunIndicOn)
+
+    ret
+
+Line0:
+	.db "Lowercase:", 0
+	ret
+Line1:
+	.db "1: Off", 0
+	ret
+Line2:
+	.db "2: On", 0
+	ret
+
+end
+
+_GetKeyRetOff .EQU $500B

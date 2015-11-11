@@ -1,0 +1,49 @@
+#include "ti83plus.inc"
+	.org 9D93h
+	.db $BB,$6D
+	;---------= Make a sound =---------
+	; c=frequency, b=duration
+#define INIT 0
+beep:	di
+	ld c, 100
+Start:
+	ld	e,INIT
+beepl1:	ld	a,c
+beepl2:	dec	a
+	jr	nz,beepl2
+	ld a, 10
+beepl3:
+	dec a
+	jr nz, beepl3
+	ld	a,e
+	xor	%00000011
+	ld	e,a
+	out	(0),a
+	djnz	beepl1
+	ld b, 80
+	ld a, $FE
+	out (1), a
+	in a, (1)
+	cp $f7
+	jr nz, down
+	inc c
+	jr beepl1
+down:
+	cp $fe
+	jr nz, left
+	dec c
+	jr beepl1
+left:
+	cp $fb
+	jr nz, right
+	ld a, c
+	out ($11), a
+	jr beepl1
+right:
+	cp $fd
+	jr nz, beepl1
+	ld	a,INIT	; you may be able to omit
+	out	(0),a	; these two lines
+	ei
+        ret
+	

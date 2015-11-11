@@ -1,0 +1,98 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+	.org 9D93h
+	.db $BB,$6D	
+	B_CALL(_ClrLCDFull)
+	DI
+	LD D, 2 ;bit position
+	LD E, $23 ;horizontal position
+Thing:
+	LD A, $BD
+	OUT ($10), A
+	LD A, E
+	OUT ($10), A
+	LD A, D
+	CP 0
+	LD A, %00100000
+	JR Z, Skip0
+	LD B, D
+Loop0:
+	RRCA
+	DJNZ Loop0
+Skip0:
+	OUT ($11), A
+	LD A, D
+	CP 0
+	LD A, %10101000
+	JR Z, Skip1
+	LD B, D
+Loop1:
+	RRCA
+	DJNZ Loop1
+Skip1:
+	OUT ($11), A
+	LD A, D
+	CP 0
+	LD A, %11111000
+	JR Z, Skip2
+	LD B, D
+Loop2:
+	RRCA
+	DJNZ Loop2
+Skip2:
+	OUT ($11), A ;done displaying thing
+	LD B, $FF ;getkey
+Stay:
+	LD C, 0
+Key:
+	B_CALL(_LCD_BUSY) ;i know...
+	LD A, $FE 
+	OUT ($1), A
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	IN A, ($1)
+	CP $FD ;left key
+	JR NZ, NotLeft
+	LD C, 1
+NotLeft:
+	CP $FB ;right key
+	JR NZ, NotRight
+	LD C, 2
+NotRight:
+	DJNZ Key
+	LD A, C
+	CP 0
+	JR Z, Stay
+	CP 2
+	JR Z, Right
+Left:
+	DEC D
+	LD A, D
+	CP $FF
+	JR NZ, Thing
+	LD A, $BD
+	OUT ($10), A
+	LD A, E
+	OUT ($10), A
+	LD A, 0
+	LD B, 3
+Clear0:
+	OUT ($11), A
+	DJNZ Clear0
+	DEC E
+	LD D, 3
+	JR Thing
+Right:
+	EI
+	B_CALL(_GetKey)
+	RET
+end 

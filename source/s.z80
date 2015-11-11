@@ -1,0 +1,125 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+#define ARROWS $FE
+#define DOWN $FE
+#define LEFT $FD
+#define RIGHT $FB
+#define UP $F7
+.LIST
+	.org 9D93h
+	.db $BB,$6D	
+	DI ;savesscreen contents: first 2bytes is horizontal position, then vertical position
+	LD HL, AppBackUpScreen
+	LD DE, AppBackUpScreen+1
+	LD BC, 768
+	LD (HL), 0
+	LDIR ;clears AppBackUpScreen
+	LD HL, saveSScreen
+	LD DE, saveSScreen+1
+	LD BC, 768
+	LD (HL), 0
+	LDIR ;clears saveSScreen
+	LD D, 12 
+	LD A, $80 
+	OUT ($10), A
+Clear0:
+	LD A, $1F
+	ADD A, D
+	OUT ($10), A
+	LD A, 0
+	LD B, 64
+Clear:
+	OUT ($11), A
+	DJNZ Clear
+	DEC D
+	LD A, D
+	CP 0
+	JR NZ, Clear0 ;clears screen
+	;everything is wonderfully clear right now
+	LD A, $FF
+	LD (saveSScreen), A
+	LD DE, saveSScreen+1
+	LD HL, AppBackUpScreen
+	LD (saveSScreen+3), HL
+	LD A, $20 
+	LD (saveSScreen+1), A
+	OUT ($10), A
+	LD A, $80
+	LD (saveSScreen+2), A
+	OUT ($10), A
+	LD A, %10000000
+	LD (AppBackUpScreen), A
+	LD (saveSScreen+5), A
+	OUT ($11), A ;and puts that pixel on the screen
+	
+	;setting up registers: DE is current, DE' is end, (not used right now)
+	;B is delay, C is current key, BC' is dot
+Key:
+	LD L, $10
+	LD A, (saveSScreen)
+	LD B, A
+Keyloop:
+	LD A, $FD
+	OUT (1), A
+	IN A, (1)
+	CP $BF
+	JP Z, Break
+	LD A, ARROWS
+	OUT (1), A
+	IN A, (1)
+	CP DOWN
+	JR NZ, aDown
+	LD C, 0
+aDown:
+	CP RIGHT
+	JR NZ, aRight
+	LD C, 1
+aRight:
+	CP LEFT
+	JR NZ, aLeft
+	LD C, 2
+aLeft:
+	CP UP
+	JR NZ, aUp
+	LD C, 3
+aUp:
+	DEC L
+	LD A, L
+	CP 0
+	JR NZ, Keyloop
+	LD L, $10
+	DJNZ Keyloop
+	BIT 0, C
+	JR NZ, UpDown
+;Left/right:
+UpDown:
+	LD A, (DE)
+	BIT 1, C
+	JR Z, Down
+	INC DE
+	LD A, (DE)
+	INC A
+	LD (DE), A
+	;OUT ($10), A
+	INC DE
+	EX DE, HL
+	LD DE, (HL)
+	EX DE, HL
+	ADD HL, 12
+	JR Up
+Down:
+
+Up: ;after
+	JR PixelDone
+PixelDone:
+Break:
+	EI
+	POP BC
+	RET
+	
+end

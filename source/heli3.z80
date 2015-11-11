@@ -1,0 +1,186 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+#define length 20 
+
+	.org 9D93h
+	.db $BB,$6D
+	
+	B_CALL(_ClrLCDFull) ;because i'm lazy
+	DI
+	;initial setting up of stuff
+	LD E, $9B ;heli position
+	LD D, $80 ;line vertical position
+	LD H, %10000000 ;line horizontal position (bit)
+	LD L, $20 ;line horizontal position
+	
+	LD A, $20 ;display the thing
+	OUT ($10), A
+Beginning:
+	LD A, E
+	OUT ($10), A
+	LD A, $8 
+	OUT ($11), A
+	LD A, $C
+	OUT ($11), A
+	LD A, $8C
+	OUT ($11), A
+	LD A, $CC
+	OUT ($11), A
+	LD A, $FF
+	OUT ($11), A
+	LD B, 3
+	LD A, $C
+First:
+	OUT ($11), A
+	DJNZ First
+	LD A, $8
+	OUT ($11), A ;done displaying
+Stay:
+	RLC H
+	LD A, L
+	JR C, Skip1
+	CP $20
+	JR Z, Check
+	JR Skip
+Skip1:
+	OUT ($10), A ;clearling last line
+	LD A, D
+	OUT ($10), A
+	LD A, 0
+	LD B, length
+Clear:
+	OUT ($11), A
+	DJNZ Clear ;done clearing last line	
+	DEC L	
+	LD A, L
+	CP $21
+	JR NC, Skip
+	CP $1F
+	JR Z, Reset
+Check:
+	LD A, D ;checking for loosing:
+	ADD A, 20
+	CP E
+	JR C, Skip
+	
+	LD A, E
+	ADD A, 9
+	CP D
+	JR C, Skip
+GameEnd:
+	LD A, $FF ;this number gets changed. 
+	LD B, 0
+	CP 10
+	JR C, Ones
+Loop:
+	SUB 10
+	INC B
+	CP 10
+	JR NC, Loop
+	LD C, A
+	LD A, B
+	ADD A, $30
+	LD (Text2+12), A
+	LD A, C
+Ones:
+	ADD A, $30
+	LD (Text2+13), A
+	LD HL, $0002
+	LD (CurRow), HL
+	LD HL, Text
+	B_CALL(_PutS)
+	LD HL, $0003
+	LD (CurRow), HL
+	LD HL, Text2
+	B_CALL(_PutS)
+	EI
+	RET
+	;add something to see if it interferes...
+Reset:
+	;decreasing the delay by 10. should be enough
+	LD A, (GameEnd+1)
+	INC A
+	LD (GameEnd+1), A
+	LD A, (DelayAmount+1)
+	CP 0
+	JR Z, NoDecrement
+	SUB 10
+	LD (DelayAmount+1), A
+NoDecrement:
+	LD L, $2B
+Rand: ;get a random number in the right range...
+	LD A, R
+	AND %00111111
+	CP 65-length
+	JR NC, Rand
+	ADD A, $80
+	LD D, A
+Skip:
+	LD A, L ;displaying line
+	OUT ($10), A
+	LD A, D
+	OUT ($10), A
+	LD A, H
+	LD B, length
+Disp:
+	OUT ($11), A
+	DJNZ Disp ;done displaying line
+	LD C, 0 ;getting key:
+DelayAmount:
+	LD B, 200 ;delay. this number gets changed
+Key:
+	;add a key thing here
+	B_CALL(_LCD_BUSY) ;i know...
+	LD A, $FE 
+	OUT ($1), A
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	NOP
+	IN A, ($1)
+	CP $F7 ;up key
+	JR NZ, No
+	LD C, 1
+No:
+	DJNZ Key
+	
+	LD A, C
+	CP 0
+	JR Z, Down
+;Up:
+	LD A, E
+	CP $80
+	JP Z, GameEnd
+	ADD A, 8
+	OUT ($10), A
+	LD A, $20
+	OUT ($10), A
+	LD A, 0
+	OUT ($11), A
+	DEC E
+	JP Beginning
+Down:
+	LD A, E
+	CP $B6
+	JP Z, GameEnd
+	OUT ($10), A
+	LD A, $20
+	OUT ($10), A
+	LD A, 0
+	OUT ($11), A
+	INC E
+	JP Beginning
+	;add a up/down thing here
+Text:
+	.db "Game Over", 0
+Text2:
+	.db "Your Score: 00", 0
+
+end 

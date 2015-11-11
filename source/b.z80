@@ -1,0 +1,34 @@
+.NOLIST
+#define   EQU   .equ
+#define   equ   .equ
+#define   END   .end
+#define   end   .end
+#include "ti83plus.inc"
+
+#define ARROWS $FE
+#define DOWN $FE
+#define LEFT $FD
+#define RIGHT $FB
+#define UP $F7
+.LIST
+	.org 9D93h
+	.db $BB,$6D	
+	
+	LD L, $25
+	LD H, $80
+	LD C, $10
+	OUT (C), H
+	OUT (C), L ;HL hold coordinates, c is port
+	LD D, $FF
+	LD B, 65
+	INC C
+Loop:
+	OUT (C), D
+	DEC C
+	OUT (C), L
+	INC C
+	B_CALL(_LCD_BUSY) ;i can't tell if this works...
+	DJNZ Loop
+
+	RET
+end 
